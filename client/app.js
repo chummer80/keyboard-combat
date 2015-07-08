@@ -118,6 +118,15 @@ Template.body.helpers({
 	score: function() {
 		return Session.get('points');
 	},
+	futureTextIndex: function() {
+		return Session.get('futureTextIndex');
+	},
+	currentWordIndex: function() {
+		return Session.get('currentWordIndex');
+	},
+	cursorPosition: function() {
+		return Session.get('cursorPosition');
+	},
 	gameOver: function() {
 		if (Session.get('challengeText')) {
 			return Session.get('cursorPosition') >= Session.get('challengeText').length;
@@ -160,7 +169,7 @@ Template.body.events({
 
 					// This keypress counts as a correct character. give 1 point.
 					Session.set('points', points + 1);
-					console.log("points: ", Session.get('points'));
+					// console.log("points: ", Session.get('points'));
 
 					// Clear the textbox because backing up beyond this word is not allowed.
 					event.target.value = "";
@@ -181,12 +190,11 @@ Template.body.events({
 				else {
 					Session.set('points', points - 1);
 				}
-				console.log("points: ", Session.get('points'));
+			}
 
-				Session.set('cursorPosition', cursorPosition + 1);
-				if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
-					endGame();
-				}
+			Session.set('cursorPosition', cursorPosition + 1);
+			if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
+				endGame();
 			}
 		}
 	},
@@ -199,22 +207,26 @@ Template.body.events({
 		if (event.keyCode === 8) {
 			var cursorPosition = Session.get('cursorPosition');
 			var currentWordIndex = Session.get('currentWordIndex');
+			var futureTextIndex = Session.get('futureTextIndex');
 			var points = Session.get('points');
 
 			// if cursor is beyond the current word index, then backing up is allowed.
 			if (cursorPosition > currentWordIndex) {
-				Session.set('cursorPosition', cursorPosition - 1);
-				// check if a correct or incorrect character is being deleted 
-				// and change the score accordingly.
-				var deletedChar = event.target.value[event.target.value.length - 1];
-				if (deletedChar === currentChar()) {
-					// deleting a correct character reduces the player's score.
-					Session.set('points', points - 1);
+				cursorPosition = cursorPosition - 1
+				Session.set('cursorPosition', cursorPosition);
+				
+				if (futureTextIndex === null || (cursorPosition < futureTextIndex)) {
+					// check if a correct or incorrect character is being deleted 
+					// and change the score accordingly.
+					var deletedChar = event.target.value[event.target.value.length - 1];
+					if (deletedChar === currentChar()) {
+						// deleting a correct character reduces the player's score.
+						Session.set('points', points - 1);
+					}
+					else {
+						Session.set('points', points + 1);
+					}
 				}
-				else {
-					Session.set('points', points + 1);
-				}
-				console.log("points: ", Session.get('points'));
 			}
 		}
 	}
