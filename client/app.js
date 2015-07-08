@@ -103,6 +103,10 @@ Template.body.events({
 		var futureTextIndex = Session.get('futureTextIndex');
 		var points = Session.get('points');
 		
+		// set cursor to the end of the textbox contents before doing anything.
+		var textContentsLength = event.target.value.length;
+		event.target.setSelectionRange(textContentsLength, textContentsLength);
+
 		// blank space or enter key was pressed.
 		if (event.charCode == 13 || event.charCode == 32) {
 			// Stop default behavior of space bar being pressed. This is to allow 
@@ -155,6 +159,10 @@ Template.body.events({
 		}
 	},
 	'keydown #typing-textbox': function(event) {
+		// set cursor to the end of the textbox contents before doing anything.
+		var textContentsLength = event.target.value.length;
+		event.target.setSelectionRange(textContentsLength, textContentsLength);
+
 		// handle backspace key
 		if (event.keyCode === 8) {
 			var cursorPosition = Session.get('cursorPosition');
