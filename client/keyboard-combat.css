@@ -1,6 +1,18 @@
 /* CSS declarations go here */
 
-.challenge-text {
+#challenge-text {
 	white-space: pre-line;
 	font-size: 20px;
+}
+
+#challenge-history {
+	color: grey;
+}
+
+#challenge-current {
+	color: green;
+}
+
+#challenge-future {
+	color: black;
 }

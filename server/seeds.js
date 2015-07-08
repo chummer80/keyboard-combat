@@ -3,6 +3,9 @@ Meteor.startup(function () {
 	// code to run on server at startup
 	if (Challenges.find({}).count() === 0) {
 		Challenges.insert({
+			text: "Testing testing 123."
+		});
+		Challenges.insert({
 			text: "Dr. Seuss - Love & Weirdness\nWe are all a little weird and life's a little weird, and when we find someone whose weirdness is compatible with ours, we join up with them and fall in mutual weirdness and call it love."
 		});
 		Challenges.insert({

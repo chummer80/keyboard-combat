@@ -6,13 +6,9 @@
   <h1>Keyboard Combat!</h1>
 
   <div>
-	<p class="challenge-text">
-		{{challengeHistory}}
-		<hr>
-		{{challengeHighlight}}
-		<hr>
-		{{challengeFuture}}
+	<p id="challenge-text">
+		<span id="challenge-history">{{challengeHistory}}</span><span id="challenge-current">{{challengeCurrent}}</span><span id="challenge-future">{{challengeFuture}}</span>
 	</p>
-	<input type="text">
+	<input id="typing-textbox" type="text" autofocus>
   </div>
 </body>
