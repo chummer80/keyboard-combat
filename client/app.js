@@ -59,12 +59,28 @@ function updateFutureTextIndex() {
 	Session.set('futureTextIndex', index);
 }
 
+function endGame() {
+	$('#typing-textbox').attr('disabled', true);
+	Session.set('currentWordIndex', null);
+	console.log('challenge over!');
+}
 
 Template.body.helpers({
 	challengeHistory: function() {
 		var challengeText = Session.get('challengeText');
 		var currentWordIndex = Session.get('currentWordIndex');
-		return challengeText ? challengeText.substring(0, currentWordIndex) : "";
+
+		if (challengeText) {
+			if (currentWordIndex !== null) {
+				return challengeText.substring(0, currentWordIndex);
+			}
+			else {
+				return challengeText;
+			}
+		}
+		else {
+			return "";
+		}
 	},
 	challengeCurrent: function() {
 		var challengeText = Session.get('challengeText');
@@ -76,7 +92,12 @@ Template.body.helpers({
 				return challengeText.substring(currentWordIndex, futureTextIndex);
 			}
 			else {
-				return challengeText.substring(currentWordIndex);
+				if (currentWordIndex !== null) {
+					return challengeText.substring(currentWordIndex);
+				}
+				else {
+					return "";
+				}
 			}
 		}
 		else {
@@ -92,6 +113,17 @@ Template.body.helpers({
 		}
 		else {
 			return "";
+		}
+	},
+	score: function() {
+		return Session.get('points');
+	},
+	gameOver: function() {
+		if (Session.get('challengeText')) {
+			return Session.get('cursorPosition') >= Session.get('challengeText').length;
+		}
+		else {
+			return false;
 		}
 	}
 });
@@ -134,7 +166,7 @@ Template.body.events({
 					event.target.value = "";
 				}
 				else {
-					console.log('challenge over!');
+					endGame();
 				}
 			}
 		}
@@ -153,7 +185,7 @@ Template.body.events({
 
 				Session.set('cursorPosition', cursorPosition + 1);
 				if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
-					console.log('challenge over!');
+					endGame();
 				}
 			}
 		}
