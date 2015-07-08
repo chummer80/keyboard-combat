@@ -3,7 +3,7 @@ Meteor.startup(function() {
 	Session.set('currentWordIndex', 0);
 	Session.set('futureTextIndex', 0);
 
-	// this is the index of the current character in the challenge text.
+	// this is the index of the current character within the challenge text.
 	Session.set('cursorPosition', 0);	
 
 	// This tracker function will always keep the session variable containing challenge
@@ -102,13 +102,13 @@ Template.body.events({
 		var currentWordIndex = Session.get('currentWordIndex');
 		var futureTextIndex = Session.get('futureTextIndex');
 		var points = Session.get('points');
-
+		
 		// blank space or enter key was pressed.
 		if (event.charCode == 13 || event.charCode == 32) {
-			if (event.charCode == 13) {
-				// put a space in the textbox so it looks cleaner when enter is pressed
-				event.target.value += " ";
-			}
+			// Stop default behavior of space bar being pressed. This is to allow 
+			// the textbox to contain just the current word being typed. No useless
+			// blank spaces.
+			event.preventDefault();
 
 			// If cursor was in the middle of a word when space or enter was pressed,
 			// then the user is ending their current word. Otherwise ignore this keystroke.
@@ -125,6 +125,9 @@ Template.body.events({
 					// This keypress counts as a correct character. give 1 point.
 					Session.set('points', points + 1);
 					console.log("points: ", Session.get('points'));
+
+					// Clear the textbox because backing up beyond this word is not allowed.
+					event.target.value = "";
 				}
 				else {
 					console.log('challenge over!');
@@ -148,6 +151,30 @@ Template.body.events({
 				if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
 					console.log('challenge over!');
 				}
+			}
+		}
+	},
+	'keydown #typing-textbox': function(event) {
+		// handle backspace key
+		if (event.keyCode === 8) {
+			var cursorPosition = Session.get('cursorPosition');
+			var currentWordIndex = Session.get('currentWordIndex');
+			var points = Session.get('points');
+
+			// if cursor is beyond the current word index, then backing up is allowed.
+			if (cursorPosition > currentWordIndex) {
+				Session.set('cursorPosition', cursorPosition - 1);
+				// check if a correct or incorrect character is being deleted 
+				// and change the score accordingly.
+				var deletedChar = event.target.value[event.target.value.length - 1];
+				if (deletedChar === currentChar()) {
+					// deleting a correct character reduces the player's score.
+					Session.set('points', points - 1);
+				}
+				else {
+					Session.set('points', points + 1);
+				}
+				console.log("points: ", Session.get('points'));
 			}
 		}
 	}
