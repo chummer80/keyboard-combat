@@ -4,6 +4,8 @@ var goalScore = 400;
 
 Meteor.startup(function() {
 	Session.set('points', 0);
+	Session.set('correctCount', 0);
+	Session.set('errorCount', 0);
 	startNewChallenge();
 });
 
@@ -98,13 +100,15 @@ Template.body.helpers({
 	challengeHistory: function() {
 		var challengeText = Session.get('challengeText');
 		var currentWordIndex = Session.get('currentWordIndex');
+		var futureTextIndex = Session.get('futureTextIndex');
+		var cursorPosition = Session.get('cursorPosition');
 
 		if (challengeText) {
-			if (currentWordIndex !== null) {
-				return challengeText.substring(0, currentWordIndex);
+			if (futureTextIndex) {
+				return challengeText.substring(0, Math.min(cursorPosition, futureTextIndex));
 			}
 			else {
-				return challengeText;
+				return challengeText.substring(0, cursorPosition);
 			}
 		}
 		else {
@@ -115,18 +119,15 @@ Template.body.helpers({
 		var challengeText = Session.get('challengeText');
 		var currentWordIndex = Session.get('currentWordIndex');
 		var futureTextIndex = Session.get('futureTextIndex');
+		var cursorPosition = Session.get('cursorPosition');
 
 		if (challengeText) {
 			if (futureTextIndex) {
-				return challengeText.substring(currentWordIndex, futureTextIndex);
+				// return challengeText.substring(currentWordIndex, futureTextIndex);
+				return challengeText.substring(Math.min(cursorPosition, futureTextIndex), futureTextIndex);
 			}
 			else {
-				if (currentWordIndex !== null) {
-					return challengeText.substring(currentWordIndex);
-				}
-				else {
-					return "";
-				}
+				return challengeText.substring(cursorPosition);
 			}
 		}
 		else {
@@ -158,6 +159,19 @@ Template.body.helpers({
 	},
 	goalScore: function() {
 		return goalScore;
+	},
+	correctCount: function() {
+		return Session.get('correctCount');
+	},
+	errorCount: function() {
+		return Session.get('errorCount');
+	},
+	accuracy: function() {
+		var correctCount = Session.get('correctCount');
+		var errorCount = Session.get('errorCount');
+		var accuracy = correctCount / (correctCount + errorCount);
+
+		return (accuracy * 100).toFixed(2) + "%";
 	},
 	gameOver: function() {
 		if (Session.get('challengeText')) {
@@ -221,9 +235,11 @@ Template.body.events({
 			if (futureTextIndex === null || (cursorPosition < futureTextIndex)) {
 				var charTyped = String.fromCharCode(event.charCode);
 				if (charTyped === currentChar()) {
+					Session.set('correctCount', Session.get('correctCount') + 1);
 					updateScore(+1);
 				}
 				else {
+					Session.set('errorCount', Session.get('errorCount') + 1);
 					updateScore(-1);
 				}
 			}
@@ -258,9 +274,11 @@ Template.body.events({
 					var deletedChar = event.target.value[event.target.value.length - 1];
 					if (deletedChar === currentChar()) {
 						// deleting a correct character reduces the player's score.
+						Session.set('correctCount', Session.get('correctCount') - 1);
 						updateScore(-1);
 					}
 					else {
+						Session.set('errorCount', Session.get('errorCount') - 1);
 						updateScore(+1);
 					}
 				}
