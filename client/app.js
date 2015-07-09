@@ -1,18 +1,30 @@
+var goalScore = 400;
+
+//////// STARTUP ////////
+
 Meteor.startup(function() {
 	Session.set('points', 0);
+	startNewChallenge();
+});
+
+
+//////// FUNCTIONS ////////
+
+function startNewChallenge() {
+	Session.set('challengeText', "");
 	Session.set('currentWordIndex', 0);
 	Session.set('futureTextIndex', 0);
 
 	// this is the index of the current character within the challenge text.
 	Session.set('cursorPosition', 0);	
 
-	// This tracker function will always keep the session variable containing challenge
-	// text up to date. That means that it will start blank, then later it will get set
-	// to a string of text as soon as the database info arrives. And because session data
-	// is reactive in Meteor, the helper functions that use the session data will update
-	// automatically.
+	$('#typing-textbox').val('');
+
+	// This tracker function will start blank, then watch the database until some data
+	// is available. At that point it will get set to a string of text from the database. 
+	// And after that it will stop tracking. It is only needed once at the beginning.
 	Tracker.autorun(function(c) {
-		var challenge = _.first(Challenges.find({}).fetch());
+		var challenge = getRandomChallenge();
 		Session.set('challengeText', challenge ? challenge.text : "");
 
 		if (challenge) {
@@ -20,8 +32,12 @@ Meteor.startup(function() {
 			c.stop();	// stop the autorun. It was only needed 1 time.
 		}
 	});
-})
+}
 
+function getRandomChallenge() {
+	var randChallengeIndex = _.random(Challenges.find().count() - 1);
+	return Challenges.findOne({_id: randChallengeIndex.toString()});
+}
 
 function currentChar() {
 	return Session.get('challengeText')[Session.get('cursorPosition')];
@@ -61,9 +77,22 @@ function updateFutureTextIndex() {
 
 function endGame() {
 	$('#typing-textbox').attr('disabled', true);
-	Session.set('currentWordIndex', null);
+	// Session.set('futureTextIndex', Session.get('currentWordIndex'));
 	console.log('challenge over!');
 }
+
+function updateScore(delta) {
+	var newScore = Session.get('points') + delta;
+	Session.set('points', newScore);
+
+	// check for end of game condition
+	if (newScore >= goalScore) {
+		endGame();
+	}
+}
+
+
+//////// VIEW HELPERS ////////
 
 Template.body.helpers({
 	challengeHistory: function() {
@@ -127,15 +156,21 @@ Template.body.helpers({
 	cursorPosition: function() {
 		return Session.get('cursorPosition');
 	},
+	goalScore: function() {
+		return goalScore;
+	},
 	gameOver: function() {
 		if (Session.get('challengeText')) {
-			return Session.get('cursorPosition') >= Session.get('challengeText').length;
+			return Session.get('points') >= goalScore;
 		}
 		else {
 			return false;
 		}
 	}
 });
+
+
+//////// EVENT LISTENERS ////////
 
 Template.body.events({
 	'keypress #typing-textbox': function(event) {
@@ -168,14 +203,15 @@ Template.body.events({
 					updateFutureTextIndex();
 
 					// This keypress counts as a correct character. give 1 point.
-					Session.set('points', points + 1);
+					updateScore(+1);
 					// console.log("points: ", Session.get('points'));
 
 					// Clear the textbox because backing up beyond this word is not allowed.
 					event.target.value = "";
 				}
 				else {
-					endGame();
+					// endGame();
+					startNewChallenge();
 				}
 			}
 		}
@@ -185,16 +221,17 @@ Template.body.events({
 			if (futureTextIndex === null || (cursorPosition < futureTextIndex)) {
 				var charTyped = String.fromCharCode(event.charCode);
 				if (charTyped === currentChar()) {
-					Session.set('points', points + 1);
+					updateScore(+1);
 				}
 				else {
-					Session.set('points', points - 1);
+					updateScore(-1);
 				}
 			}
 
 			Session.set('cursorPosition', cursorPosition + 1);
 			if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
-				endGame();
+				// endGame();
+				startNewChallenge();
 			}
 		}
 	},
@@ -221,10 +258,10 @@ Template.body.events({
 					var deletedChar = event.target.value[event.target.value.length - 1];
 					if (deletedChar === currentChar()) {
 						// deleting a correct character reduces the player's score.
-						Session.set('points', points - 1);
+						updateScore(-1);
 					}
 					else {
-						Session.set('points', points + 1);
+						updateScore(+1);
 					}
 				}
 			}
