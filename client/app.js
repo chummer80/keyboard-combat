@@ -1,6 +1,8 @@
 //////// CONSTANTS ////////
 
 var goalScore = 400;
+var correctPoints = 1;
+var errorPoints = 3;
 
 
 
@@ -237,7 +239,7 @@ Template.body.events({
 					updateFutureTextIndex();
 
 					// This keypress counts as a correct character. give 1 point.
-					updateScore(+1);
+					updateScore(+correctPoints);
 					// console.log("points: ", Session.get('points'));
 
 					// Clear the textbox because backing up beyond this word is not allowed.
@@ -256,7 +258,7 @@ Template.body.events({
 				var charTyped = String.fromCharCode(event.charCode);
 				if (charTyped === currentChar()) {
 					Session.set('correctCount', Session.get('correctCount') + 1);
-					updateScore(+1);
+					updateScore(+correctPoints);
 				}
 				else {
 					// push current cursor position onto the list of errors
@@ -264,7 +266,7 @@ Template.body.events({
 					errorArray.push(cursorPosition);
 					Session.set('errors', errorArray);
 					Session.set('errorCount', Session.get('errorCount') + 1);
-					updateScore(-1);
+					updateScore(-errorPoints);
 				}
 			}
 
@@ -299,7 +301,7 @@ Template.body.events({
 					if (deletedChar === currentChar()) {
 						// deleting a correct character reduces the player's score.
 						Session.set('correctCount', Session.get('correctCount') - 1);
-						updateScore(-1);
+						updateScore(-correctPoints);
 					}
 					else {
 						// Remove current cursor position from the list of errors.
@@ -314,7 +316,7 @@ Template.body.events({
 
 						Session.set('errors', errorArray);
 						Session.set('errorCount', Session.get('errorCount') - 1);
-						updateScore(+1);
+						updateScore(+errorPoints);
 					}
 				}
 			}
