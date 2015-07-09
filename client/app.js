@@ -1,4 +1,8 @@
+//////// CONSTANTS ////////
+
 var goalScore = 400;
+
+
 
 //////// STARTUP ////////
 
@@ -15,7 +19,8 @@ Meteor.startup(function() {
 function startNewChallenge() {
 	Session.set('challengeText', "");
 	Session.set('currentWordIndex', 0);
-	Session.set('futureTextIndex', 0);
+	Session.set('nextWordIndex', 0);
+	Session.set('errors', []);
 
 	// this is the index of the current character within the challenge text.
 	Session.set('cursorPosition', 0);	
@@ -46,7 +51,7 @@ function currentChar() {
 }
 
 function updateFutureTextIndex() {
-	var index = Session.get('futureTextIndex');
+	var index = Session.get('nextWordIndex');
 	var challengeText = Session.get('challengeText');
 	var tempChar = "";
 
@@ -54,7 +59,7 @@ function updateFutureTextIndex() {
 		index++;
 		if (index >= challengeText.length) { 
 			// end of string reached
-			Session.set('futureTextIndex', null);
+			Session.set('nextWordIndex', null);
 			return; 
 		} 
 		tempChar = challengeText[index];
@@ -66,7 +71,7 @@ function updateFutureTextIndex() {
 		index++;
 		if (index >= challengeText.length) { 
 			// end of string reached
-			Session.set('futureTextIndex', null);
+			Session.set('nextWordIndex', null);
 			return; 
 		}
 		tempChar = challengeText[index];
@@ -74,12 +79,12 @@ function updateFutureTextIndex() {
 	while(tempChar === " " || tempChar === "\n");
 
 	// now index points to a non-space character. This is the future text.
-	Session.set('futureTextIndex', index);
+	Session.set('nextWordIndex', index);
 }
 
 function endGame() {
 	$('#typing-textbox').attr('disabled', true);
-	// Session.set('futureTextIndex', Session.get('currentWordIndex'));
+	// Session.set('nextWordIndex', Session.get('currentWordIndex'));
 	console.log('challenge over!');
 }
 
@@ -100,31 +105,41 @@ Template.body.helpers({
 	challengeHistory: function() {
 		var challengeText = Session.get('challengeText');
 		var currentWordIndex = Session.get('currentWordIndex');
-		var futureTextIndex = Session.get('futureTextIndex');
+		var nextWordIndex = Session.get('nextWordIndex');
 		var cursorPosition = Session.get('cursorPosition');
+		var text;
 
 		if (challengeText) {
-			if (futureTextIndex) {
-				return challengeText.substring(0, Math.min(cursorPosition, futureTextIndex));
+			if (nextWordIndex) {
+				text = challengeText.substring(0, Math.min(cursorPosition, nextWordIndex));
 			}
 			else {
-				return challengeText.substring(0, cursorPosition);
+				text = challengeText.substring(0, cursorPosition);
 			}
+
+			// Mark errors within this text with spans of class 'challenge-error'
+			text = text.split("");
+			_.each(Session.get('errors'), function(errorIndex) {
+				text[errorIndex] = '<span class="challenge-error">' + text[errorIndex] + '</span>';
+			});
+			text = text.join("");
 		}
 		else {
-			return "";
+			text = "";
 		}
+	
+		return text;
 	},
 	challengeCurrent: function() {
 		var challengeText = Session.get('challengeText');
 		var currentWordIndex = Session.get('currentWordIndex');
-		var futureTextIndex = Session.get('futureTextIndex');
+		var nextWordIndex = Session.get('nextWordIndex');
 		var cursorPosition = Session.get('cursorPosition');
 
 		if (challengeText) {
-			if (futureTextIndex) {
-				// return challengeText.substring(currentWordIndex, futureTextIndex);
-				return challengeText.substring(Math.min(cursorPosition, futureTextIndex), futureTextIndex);
+			if (nextWordIndex) {
+				// return challengeText.substring(currentWordIndex, nextWordIndex);
+				return challengeText.substring(Math.min(cursorPosition, nextWordIndex), nextWordIndex);
 			}
 			else {
 				return challengeText.substring(cursorPosition);
@@ -136,10 +151,10 @@ Template.body.helpers({
 	},
 	challengeFuture: function() {
 		var challengeText = Session.get('challengeText');
-		var futureTextIndex = Session.get('futureTextIndex');
+		var nextWordIndex = Session.get('nextWordIndex');
 
-		if (challengeText && futureTextIndex) {
-			return challengeText.substring(futureTextIndex);
+		if (challengeText && nextWordIndex) {
+			return challengeText.substring(nextWordIndex);
 		}
 		else {
 			return "";
@@ -148,8 +163,8 @@ Template.body.helpers({
 	score: function() {
 		return Session.get('points');
 	},
-	futureTextIndex: function() {
-		return Session.get('futureTextIndex');
+	nextWordIndex: function() {
+		return Session.get('nextWordIndex');
 	},
 	currentWordIndex: function() {
 		return Session.get('currentWordIndex');
@@ -164,14 +179,19 @@ Template.body.helpers({
 		return Session.get('correctCount');
 	},
 	errorCount: function() {
-		return Session.get('errorCount');
+		return Session.get('errorCount') + " : " + Session.get('errors');
 	},
 	accuracy: function() {
 		var correctCount = Session.get('correctCount');
 		var errorCount = Session.get('errorCount');
 		var accuracy = correctCount / (correctCount + errorCount);
 
-		return (accuracy * 100).toFixed(2) + "%";
+		if (correctCount === 0  && errorCount === 0) {
+			return "0.00%"
+		}
+		else {
+			return (accuracy * 100).toFixed(2) + "%";
+		}
 	},
 	gameOver: function() {
 		if (Session.get('challengeText')) {
@@ -190,7 +210,7 @@ Template.body.events({
 	'keypress #typing-textbox': function(event) {
 		var cursorPosition = Session.get('cursorPosition');
 		var currentWordIndex = Session.get('currentWordIndex');
-		var futureTextIndex = Session.get('futureTextIndex');
+		var nextWordIndex = Session.get('nextWordIndex');
 		var points = Session.get('points');
 		
 		// set cursor to the end of the textbox contents before doing anything.
@@ -210,9 +230,9 @@ Template.body.events({
 			if (cursorPosition != currentWordIndex) {
 				// To end a word, set cursor and current word index to future-text position. If there is no future text
 				// then the challenge is over.
-				if (futureTextIndex) {
-					Session.set('cursorPosition', futureTextIndex);	
-					Session.set('currentWordIndex', futureTextIndex);	
+				if (nextWordIndex) {
+					Session.set('cursorPosition', nextWordIndex);	
+					Session.set('currentWordIndex', nextWordIndex);	
 					// Then set a new future text position.
 					updateFutureTextIndex();
 
@@ -224,7 +244,7 @@ Template.body.events({
 					event.target.value = "";
 				}
 				else {
-					// endGame();
+					event.preventDefault();
 					startNewChallenge();
 				}
 			}
@@ -232,13 +252,17 @@ Template.body.events({
 		// else a regular character was typed.
 		else {
 			// ignore typing if user has typed too many characters for current word.
-			if (futureTextIndex === null || (cursorPosition < futureTextIndex)) {
+			if (nextWordIndex === null || (cursorPosition < nextWordIndex)) {
 				var charTyped = String.fromCharCode(event.charCode);
 				if (charTyped === currentChar()) {
 					Session.set('correctCount', Session.get('correctCount') + 1);
 					updateScore(+1);
 				}
 				else {
+					// push current cursor position onto the list of errors
+					var errorArray = Session.get('errors');
+					errorArray.push(cursorPosition);
+					Session.set('errors', errorArray);
 					Session.set('errorCount', Session.get('errorCount') + 1);
 					updateScore(-1);
 				}
@@ -246,7 +270,7 @@ Template.body.events({
 
 			Session.set('cursorPosition', cursorPosition + 1);
 			if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
-				// endGame();
+				event.preventDefault();
 				startNewChallenge();
 			}
 		}
@@ -260,7 +284,7 @@ Template.body.events({
 		if (event.keyCode === 8) {
 			var cursorPosition = Session.get('cursorPosition');
 			var currentWordIndex = Session.get('currentWordIndex');
-			var futureTextIndex = Session.get('futureTextIndex');
+			var nextWordIndex = Session.get('nextWordIndex');
 			var points = Session.get('points');
 
 			// if cursor is beyond the current word index, then backing up is allowed.
@@ -268,7 +292,7 @@ Template.body.events({
 				cursorPosition = cursorPosition - 1
 				Session.set('cursorPosition', cursorPosition);
 				
-				if (futureTextIndex === null || (cursorPosition < futureTextIndex)) {
+				if (nextWordIndex === null || (cursorPosition < nextWordIndex)) {
 					// check if a correct or incorrect character is being deleted 
 					// and change the score accordingly.
 					var deletedChar = event.target.value[event.target.value.length - 1];
@@ -278,6 +302,17 @@ Template.body.events({
 						updateScore(-1);
 					}
 					else {
+						// Remove current cursor position from the list of errors.
+						// It should be the last element in the array.
+						var errorArray = Session.get('errors');
+						var poppedIndex = errorArray.pop();
+
+						// make sure we're popping the correctd index
+						if (poppedIndex !== cursorPosition) {
+							throw "Error index " + poppedIndex + " was popped. Should be " + cursorPosition;
+						}
+
+						Session.set('errors', errorArray);
 						Session.set('errorCount', Session.get('errorCount') - 1);
 						updateScore(+1);
 					}
