@@ -29,16 +29,25 @@ function startNewChallenge() {
 
 	$('#typing-textbox').val('');
 
-	// This tracker function will start blank, then watch the database until some data
-	// is available. At that point it will get set to a string of text from the database. 
-	// And after that it will stop tracking. It is only needed once at the beginning.
-	Tracker.autorun(function(c) {
-		var challenge = getRandomChallenge();
-		Session.set('challengeText', challenge ? challenge.text : "");
+	Meteor.call('velocity/isMirror', function(err, isMirror) {
+		if (isMirror) {
+			// During testing, set challenge text to a predictable string of text.
+			Session.set('challengeText', "Testing testing\n123");
+			updateNextWordIndex();
+		}
+		else {
+			// This tracker function will start blank, then watch the database until some data
+			// is available. At that point it will get set to a string of text from the database. 
+			// And after that it will stop tracking. It is only needed once at the beginning.
+			Tracker.autorun(function(c) {
+				var challenge = getRandomChallenge();
 
-		if (challenge) {
-			updateFutureTextIndex();
-			c.stop();	// stop the autorun. It was only needed 1 time.
+				if (challenge) {
+					Session.set('challengeText', challenge.text);
+					updateNextWordIndex();
+					c.stop();	// stop the autorun. It was only needed 1 time.
+				}
+			});
 		}
 	});
 }
@@ -52,7 +61,7 @@ function currentChar() {
 	return Session.get('challengeText')[Session.get('cursorPosition')];
 }
 
-function updateFutureTextIndex() {
+function updateNextWordIndex() {
 	var index = Session.get('nextWordIndex');
 	var challengeText = Session.get('challengeText');
 	var tempChar = "";
@@ -188,7 +197,7 @@ Template.body.helpers({
 		var errorCount = Session.get('errorCount');
 		var accuracy = correctCount / (correctCount + errorCount);
 
-		if (correctCount === 0  && errorCount === 0) {
+		if (correctCount === 0	&& errorCount === 0) {
 			return "0.00%"
 		}
 		else {
@@ -236,7 +245,7 @@ Template.body.events({
 					Session.set('cursorPosition', nextWordIndex);	
 					Session.set('currentWordIndex', nextWordIndex);	
 					// Then set a new future text position.
-					updateFutureTextIndex();
+					updateNextWordIndex();
 
 					// This keypress counts as a correct character. give 1 point.
 					updateScore(+correctPoints);
