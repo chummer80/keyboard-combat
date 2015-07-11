@@ -11,9 +11,9 @@
 	</p>
 	<input id="typing-textbox" type="text" autofocus>
 	<h3 id="score">Score: {{score}} / {{goalScore}}</h3>
-	<h3>Accuracy: {{accuracy}}</h3>
+	<h3 id="accuracy">Accuracy: {{accuracy}}</h3>
 	{{#if gameOver}}
-		<h1>GAME OVER</h1>
+		<h1 id="game-over-msg">GAME OVER</h1>
 	{{/if}}
 
 	<!-- debug output -->

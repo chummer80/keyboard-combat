@@ -1,6 +1,12 @@
 //////// CONSTANTS ////////
 
 var goalScore = 400;
+Meteor.call('velocity/isMirror', function(err, isMirror) {
+	if (isMirror) {
+		goalScore = 40;
+	}
+});
+
 var correctPoints = 1;
 var errorPoints = 3;
 
@@ -32,7 +38,7 @@ function startNewChallenge() {
 	Meteor.call('velocity/isMirror', function(err, isMirror) {
 		if (isMirror) {
 			// During testing, set challenge text to a predictable string of text.
-			Session.set('challengeText', "Testing testing\n123");
+			Session.set('challengeText', "Testing testing\n123 testing");
 			updateNextWordIndex();
 		}
 		else {
@@ -242,14 +248,14 @@ Template.body.events({
 				// To end a word, set cursor and current word index to future-text position. If there is no future text
 				// then the challenge is over.
 				if (nextWordIndex) {
+					// This keypress counts as a correct character. give 1 point.
+					Session.set('correctCount', Session.get('correctCount') + 1);
+					updateScore(+correctPoints);
+
 					Session.set('cursorPosition', nextWordIndex);	
 					Session.set('currentWordIndex', nextWordIndex);	
 					// Then set a new future text position.
 					updateNextWordIndex();
-
-					// This keypress counts as a correct character. give 1 point.
-					updateScore(+correctPoints);
-					// console.log("points: ", Session.get('points'));
 
 					// Clear the textbox because backing up beyond this word is not allowed.
 					event.target.value = "";
