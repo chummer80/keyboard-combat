@@ -9,3 +9,6 @@ autopublish
 insecure
 fourseven:scss
 mike:mocha
+accounts-ui
+accounts-facebook
+accounts-password
