@@ -118,7 +118,7 @@ function updateScore(delta) {
 
 //////// VIEW HELPERS ////////
 
-Template.body.helpers({
+Template.gameUI.helpers({
 	challengeHistory: function() {
 		var challengeText = Session.get('challengeText');
 		var currentWordIndex = Session.get('currentWordIndex');
@@ -220,10 +220,15 @@ Template.body.helpers({
 	}
 });
 
+Template.userList.helpers({
+	onlineUsers: function() {
+		return Meteor.users.find({"status.online": true});
+	}
+});
 
 //////// EVENT LISTENERS ////////
 
-Template.body.events({
+Template.gameUI.events({
 	'keypress #typing-textbox': function(event) {
 		var cursorPosition = Session.get('cursorPosition');
 		var currentWordIndex = Session.get('currentWordIndex');
@@ -338,3 +343,4 @@ Template.body.events({
 		}
 	}
 });
+

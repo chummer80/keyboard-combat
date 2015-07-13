@@ -1,0 +1,20 @@
+<template name="gameUI">
+	<div>
+		<p id="challenge-text">
+			<span id="challenge-history">{{{challengeHistory}}}</span><span id="challenge-current">{{challengeCurrent}}</span><span id="challenge-future">{{challengeFuture}}</span>
+		</p>
+		<input id="typing-textbox" type="text" autofocus>
+		<h3 id="score">Score: {{score}} / {{goalScore}}</h3>
+		<h3 id="accuracy">Accuracy: {{accuracy}}</h3>
+		{{#if gameOver}}
+			<h1 id="game-over-msg">GAME OVER</h1>
+		{{/if}}
+
+		<!-- debug output -->
+		<h3>correctCount: {{correctCount}}</h3>
+		<h3>errorCount: {{errorCount}}</h3>
+		<h3>cursorPosition: {{cursorPosition}}</h3>
+		<h3>currentWordIndex: {{currentWordIndex}}</h3>
+		<h3>nextWordIndex: {{nextWordIndex}}</h3>
+	</div>
+</template>

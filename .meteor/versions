@@ -5,7 +5,6 @@ accounts-password@1.1.1
 accounts-ui@1.1.5
 accounts-ui-unstyled@1.1.7
 amplify@1.0.0
-autopublish@1.0.3
 autoupdate@1.2.1
 base64@1.0.3
 binary-heap@1.0.3
@@ -41,6 +40,8 @@ mike:mocha@0.6.0
 mike:mocha-core@0.1.0
 minifiers@1.1.5
 minimongo@1.0.8
+mizzao:timesync@0.3.2
+mizzao:user-status@0.6.5
 mobile-status-bar@1.0.3
 mongo@1.1.0
 npm-bcrypt@0.7.8_2
