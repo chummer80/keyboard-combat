@@ -1,3 +1,4 @@
+/*
 // wait 50 milliseconds for handlebars templates to update the page before executing any assertions
 var updateDelay = 100;	
 var should = chai.should();
@@ -381,3 +382,4 @@ if (!(typeof MochaWeb === 'undefined')){
 		});
 	});
 }
+*/

@@ -4,7 +4,7 @@
 function findingGame() {
 	if (!Meteor.userId()) { return false; }
 
-	var gamesWithCurrentUser = Games.find({players: {$elemMatch: {$in: [Meteor.userId()]}}});
+	var gamesWithCurrentUser = Games.find({"players.id": Meteor.userId(), status: "waiting"});
 	return !!gamesWithCurrentUser.count();
 }
 

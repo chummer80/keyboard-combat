@@ -10,6 +10,8 @@ Meteor.call('velocity/isMirror', function(err, isMirror) {
 var correctPoints = 1;
 var errorPoints = 3;
 
+var gameId, selfIndex, opponentIndex;
+
 
 //////// FUNCTIONS ////////
 
@@ -97,6 +99,7 @@ function endGame() {
 function updateScore(delta) {
 	var newScore = Session.get('points') + delta;
 	Session.set('points', newScore);
+	Meteor.call('setScore', gameId, selfIndex, newScore);
 
 	// check for end of game condition
 	if (newScore >= goalScore) {
@@ -108,6 +111,11 @@ function updateScore(delta) {
 //////// STARTUP ////////
 
 Template.gameUI.created = function() {
+	var game = Games.findOne({"players.id": Meteor.userId()});
+	gameId = game._id;
+	selfIndex = (game.players[0].id === Meteor.userId()) ? 0 : 1;
+	opponentIndex = (game.players[0].id === Meteor.userId()) ? 1 : 0;
+
 	Session.set('points', 0);
 	Session.set('correctCount', 0);
 	Session.set('errorCount', 0);
@@ -216,6 +224,14 @@ Template.gameUI.helpers({
 		else {
 			return false;
 		}
+	},
+	opponentName: function() {
+		var game = Games.findOne({_id: gameId}, {fields: {"players.name": 1}});
+		return game.players[opponentIndex].name;
+	},
+	opponentScore: function() {
+		var game = Games.findOne({_id: gameId}, {fields: {"players.score": 1}});
+		return game.players[opponentIndex].score;
 	}
 });
 

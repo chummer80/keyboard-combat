@@ -14,7 +14,8 @@ Meteor.startup(function() {
 //////// VIEW HELPERS ////////
 Template.body.helpers({
 	inGame: function() {
-		return false;
+		var gamesWithCurrentUser = Games.find({"players.id": Meteor.userId(), status: "playing"});
+		return !!gamesWithCurrentUser.count();
 	}
 });
 
