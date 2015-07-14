@@ -24,6 +24,17 @@ Template.gameLobby.helpers({
 
 Template.gameLobby.events({
 	'click #find-game-button': function() {
-		Meteor.call('joinGame');
+		if (findingGame()) {
+			Meteor.call('leaveGame', Meteor.userId(), function(error, result) {
+				// Session.set('gameID', null);
+				console.log("user left the game");
+			});
+		}
+		else {
+			var gameId = Meteor.call('joinGame', function(error, result) {
+				console.log("game #" + result + " was joined!");
+				// Session.set('gameID', result);
+			});
+		}
 	}
 });

@@ -13,5 +13,6 @@ Accounts.onCreateUser(function(options, user) {
 });
 
 UserStatus.events.on("connectionLogout", function(fields) {
+	Meteor.call('leaveGame', fields.userId);
 	console.log(fields.userId, " logged out. username: " + Meteor.users.findOne({_id: fields.userId}).profile.name);
 });
