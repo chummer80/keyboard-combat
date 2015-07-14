@@ -14,6 +14,9 @@
 				<h1 id="game-over-msg">YOU LOSE! {{opponentName}} WINS!</h1>
 			{{/if}}
 		{{/if}}
+		{{#if isGameOver}}
+			<button id="leave-game-button">Back to Lobby</button>
+		{{/if}}
 
 		<!-- debug output -->
 <!-- 		<h3>correctCount: {{correctCount}}</h3>

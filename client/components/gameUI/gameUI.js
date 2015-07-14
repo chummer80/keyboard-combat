@@ -1,6 +1,6 @@
 //////// CONSTANTS ////////
 
-var goalScore = 400;
+var goalScore = 100;
 Meteor.call('velocity/isMirror', function(err, isMirror) {
 	if (isMirror) {
 		goalScore = 40;
@@ -10,7 +10,9 @@ Meteor.call('velocity/isMirror', function(err, isMirror) {
 var correctPoints = 1;
 var errorPoints = 3;
 
-var gameId, selfIndex, opponentIndex;
+var gameId, selfIndex, opponentIndex, opponentName = "";
+var gameInProgress = true;
+var finalOpponentScore = 0;
 
 
 //////// FUNCTIONS ////////
@@ -117,6 +119,7 @@ Template.gameUI.created = function() {
 	gameId = game._id;
 	selfIndex = (game.players[0].id === Meteor.userId()) ? 0 : 1;
 	opponentIndex = (game.players[0].id === Meteor.userId()) ? 1 : 0;
+	opponentName = game.players[opponentIndex].name;
 
 	Session.set('points', 0);
 	Session.set('correctCount', 0);
@@ -228,16 +231,34 @@ Template.gameUI.helpers({
 		return game.winner === opponentIndex;
 	},
 	isGameOver: function() {
-		var game = Games.findOne({_id: gameId}, {fields: {winner: 1}});
-		return game.winner !== null;
+		var game = Games.findOne(
+			{_id: gameId}, 
+			{
+				reactive: gameInProgress, 
+				fields: {winner: 1, "players.score": 1}
+			}
+		);
+		
+		// this variable tracks whether game is over or not, so at the end
+		// of the game the opponentscore can be frozen.
+		gameInProgress = game.winner === null;
+		if (!gameInProgress) {
+			finalOpponentScore = game.players[opponentIndex].score;
+		}
+
+	 	return game.winner !== null;
 	},
 	opponentName: function() {
-		var game = Games.findOne({_id: gameId}, {fields: {"players.name": 1}});
-		return game.players[opponentIndex].name;
+		return opponentName;
 	},
 	opponentScore: function() {
-		var game = Games.findOne({_id: gameId}, {fields: {"players.score": 1}});
-		return game.players[opponentIndex].score;
+		if (gameInProgress) {
+			var game = Games.findOne({_id: gameId}, {reactive: gameInProgress, fields: {"players.score": 1}});
+			return game.players[opponentIndex].score;
+		}
+		else {
+			return finalOpponentScore;
+		}
 	}
 });
 
@@ -357,6 +378,10 @@ Template.gameUI.events({
 				}
 			}
 		}
+	},
+	'click #leave-game-button': function() {
+		console.log("leaving game");
+		Meteor.call('leaveGame', Meteor.userId());
 	}
 });
 
