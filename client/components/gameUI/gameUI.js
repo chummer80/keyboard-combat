@@ -1,6 +1,6 @@
 //////// CONSTANTS ////////
 
-var goalScore = 100;
+var goalScore = 300;
 Meteor.call('velocity/isMirror', function(err, isMirror) {
 	if (isMirror) {
 		goalScore = 40;
@@ -13,11 +13,13 @@ var errorPoints = 3;
 var gameId, selfIndex, opponentIndex, opponentName = "";
 var gameInProgress = true;
 var finalOpponentScore = 0;
+var timer, timerStart;
 
 
 //////// FUNCTIONS ////////
 
 function startNewChallenge() {
+	Session.set('timer', 0);
 	Session.set('challengeText', "");
 	Session.set('currentWordIndex', 0);
 	Session.set('nextWordIndex', 0);
@@ -93,11 +95,10 @@ function updateNextWordIndex() {
 }
 
 function endGame() {
-	Meteor.call('setWinner', gameId, selfIndex);
-
-	// $('#typing-textbox').attr('disabled', true);
-	// Session.set('nextWordIndex', Session.get('currentWordIndex'));
-	console.log('challenge over!');
+	var game = Games.findOne({_id: gameId}, {fields: {winner: 1, "players.score": 1}});
+	gameInProgress = game.winner === null;
+	finalOpponentScore = game.players[opponentIndex].score;
+	clearInterval(timer);
 }
 
 function updateScore(delta) {
@@ -107,6 +108,7 @@ function updateScore(delta) {
 
 	// check for end of game condition
 	if (newScore >= goalScore) {
+		Meteor.call('setWinner', gameId, selfIndex);
 		endGame();
 	}
 }
@@ -120,6 +122,23 @@ Template.gameUI.created = function() {
 	selfIndex = (game.players[0].id === Meteor.userId()) ? 0 : 1;
 	opponentIndex = (game.players[0].id === Meteor.userId()) ? 1 : 0;
 	opponentName = game.players[opponentIndex].name;
+
+	// start timer
+	timerStart = Date.now();
+	timer = setInterval(function() {
+		Session.set('timer', Date.now() - timerStart);
+	}, 100);
+
+	// watch this game's winner index for changes so we
+	// know when to call endGame()
+	Games.find({_id: gameId}, {fields: {winner: 1}})
+		.observeChanges({
+			changed: function(id, fields) {
+				if (fields.winner !== null) {
+					endGame();
+				}
+			}
+		});
 
 	Session.set('points', 0);
 	Session.set('correctCount', 0);
@@ -222,6 +241,23 @@ Template.gameUI.helpers({
 			return (accuracy * 100).toFixed(2) + "%";
 		}
 	},
+	timer: function() {
+		var timerMs = Session.get('timer');
+		
+		var min = Math.floor(timerMs / 1000 / 60);
+		var minStr = min < 10 ? "0" + min : min.toString();
+
+		var sec = Math.floor((timerMs - min * 1000 * 60)/ 1000);
+		var secStr = sec < 10 ? "0" + sec : sec.toString();
+		
+		return minStr + ":" + secStr;
+	},
+	wpm: function() {
+		var totalChars = Session.get('correctCount') + Session.get('errorCount');
+		var minutes = Session.get('timer') / 1000 / 60;
+		var netWpm = (totalChars / 5 - Session.get('errorCount')) / minutes;
+		return Math.round(netWpm);
+	},
 	isWinner: function() {
 		var game = Games.findOne({_id: gameId}, {fields: {winner: 1}});
 		return game.winner === selfIndex;
@@ -231,21 +267,7 @@ Template.gameUI.helpers({
 		return game.winner === opponentIndex;
 	},
 	isGameOver: function() {
-		var game = Games.findOne(
-			{_id: gameId}, 
-			{
-				reactive: gameInProgress, 
-				fields: {winner: 1, "players.score": 1}
-			}
-		);
-		
-		// this variable tracks whether game is over or not, so at the end
-		// of the game the opponentscore can be frozen.
-		gameInProgress = game.winner === null;
-		if (!gameInProgress) {
-			finalOpponentScore = game.players[opponentIndex].score;
-		}
-
+		var game = Games.findOne({_id: gameId}, {fields: {winner: 1, "players.score": 1}});
 	 	return game.winner !== null;
 	},
 	opponentName: function() {
@@ -253,7 +275,7 @@ Template.gameUI.helpers({
 	},
 	opponentScore: function() {
 		if (gameInProgress) {
-			var game = Games.findOne({_id: gameId}, {reactive: gameInProgress, fields: {"players.score": 1}});
+			var game = Games.findOne({_id: gameId}, {fields: {"players.score": 1}});
 			return game.players[opponentIndex].score;
 		}
 		else {

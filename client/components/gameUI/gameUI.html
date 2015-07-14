@@ -4,9 +4,11 @@
 			<span id="challenge-history">{{{challengeHistory}}}</span><span id="challenge-current">{{challengeCurrent}}</span><span id="challenge-future">{{challengeFuture}}</span>
 		</p>
 		<input id="typing-textbox" type="text" autofocus disabled="{{isGameOver}}">
+		<h3>Time Elapsed: {{timer}}</h3>
 		<h3 id="score">My Score: {{score}} / {{goalScore}}</h3>
-		<h3 id="score">{{opponentName}}'s Score: {{opponentScore}} / {{goalScore}}</h3>
+		<h3 id="oppScore">{{opponentName}}'s Score: {{opponentScore}} / {{goalScore}}</h3>
 		<h3 id="accuracy">Accuracy: {{accuracy}}</h3>
+		<h3 id="wpm">Net WPM: {{wpm}}</h3>
 		{{#if isWinner}}
 			<h1 id="game-over-msg">YOU WIN! {{opponentName}} LOSES!</h1>
 		{{else}}
