@@ -6,7 +6,12 @@
 	<h1>Keyboard Combat!</h1>
 	{{> loginButtons}}
 
-	{{> gameUI}}
-
-	{{> userList}}
+	{{#if currentUser}}
+		{{#if inGame}}
+			{{> gameUI}}
+		{{else}}
+			{{> gameLobby}}
+			{{> userList}}
+		{{/if}}
+	{{/if}}
 </body>

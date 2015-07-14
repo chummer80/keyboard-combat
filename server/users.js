@@ -1,4 +1,3 @@
-
 Accounts.onCreateUser(function(options, user) {
 	if (options.profile) {
 		user.profile = options.profile;
@@ -11,4 +10,8 @@ Accounts.onCreateUser(function(options, user) {
 	}
 
 	return user;
+});
+
+UserStatus.events.on("connectionLogout", function(fields) {
+	console.log(fields.userId, " logged out. username: " + Meteor.users.findOne({_id: fields.userId}).profile.name);
 });

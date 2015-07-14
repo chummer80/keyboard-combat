@@ -1,0 +1,14 @@
+<template name="gameLobby">
+	<div>
+		<button id="find-game-button">
+			{{#if findingGame}}
+				Cancel
+			{{else}}
+				Find a Game
+			{{/if}}
+		</button>
+		{{#if findingGame}}
+			<h4>Searching for a game...</h4>
+		{{/if}}
+	</div>
+</template>
