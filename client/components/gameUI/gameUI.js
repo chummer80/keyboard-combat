@@ -91,7 +91,9 @@ function updateNextWordIndex() {
 }
 
 function endGame() {
-	$('#typing-textbox').attr('disabled', true);
+	Meteor.call('setWinner', gameId, selfIndex);
+
+	// $('#typing-textbox').attr('disabled', true);
 	// Session.set('nextWordIndex', Session.get('currentWordIndex'));
 	console.log('challenge over!');
 }
@@ -217,13 +219,17 @@ Template.gameUI.helpers({
 			return (accuracy * 100).toFixed(2) + "%";
 		}
 	},
-	gameOver: function() {
-		if (Session.get('challengeText')) {
-			return Session.get('points') >= goalScore;
-		}
-		else {
-			return false;
-		}
+	isWinner: function() {
+		var game = Games.findOne({_id: gameId}, {fields: {winner: 1}});
+		return game.winner === selfIndex;
+	},
+	isLoser: function() {
+		var game = Games.findOne({_id: gameId}, {fields: {winner: 1}});
+		return game.winner === opponentIndex;
+	},
+	isGameOver: function() {
+		var game = Games.findOne({_id: gameId}, {fields: {winner: 1}});
+		return game.winner !== null;
 	},
 	opponentName: function() {
 		var game = Games.findOne({_id: gameId}, {fields: {"players.name": 1}});
