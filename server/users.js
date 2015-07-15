@@ -9,6 +9,9 @@ Accounts.onCreateUser(function(options, user) {
 		user.profile.name = options.email;
 	}
 
+	user.wins = 0;
+	user.losses = 0;
+
 	return user;
 });
 
