@@ -1,8 +1,6 @@
 // code to run on server at startup
 Meteor.startup(function () {
-	// Challenges.remove({});
-	
-
+	Challenges.remove({});
 	Games.remove({});
 
 	if (Challenges.find({}).count() === 0) {

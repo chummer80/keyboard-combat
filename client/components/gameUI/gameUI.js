@@ -31,8 +31,6 @@ function startNewChallenge() {
 	// this is the index of the current character within the challenge text.
 	Session.set('cursorPosition', 0);	
 
-	$('#typing-textbox').val('');
-
 	Meteor.call('velocity/isMirror', function(err, isMirror) {
 		if (isMirror) {
 			// During testing, set challenge text to a predictable string of text.
@@ -102,6 +100,10 @@ function endGame() {
 	gameInProgress = game.winner === null;
 	finalOpponentScore = game.players[opponentIndex].score;
 	clearInterval(timer);
+
+	// stop handling typing events
+	$(document).off('keypress');
+	$(document).off('keydown');
 }
 
 function updateScore(delta) {
@@ -115,6 +117,115 @@ function updateScore(delta) {
 		endGame();
 	}
 }
+
+
+function handleKeypress(event) {
+	var cursorPosition = Session.get('cursorPosition');
+	var currentWordIndex = Session.get('currentWordIndex');
+	var nextWordIndex = Session.get('nextWordIndex');
+	var points = Session.get('points');
+	
+	// blank space or enter key was pressed.
+	if (event.charCode == 13 || event.charCode == 32) {
+		// Stop default behavior of space bar being pressed. This is to allow 
+		// the textbox to contain just the current word being typed. No useless
+		// blank spaces.
+		event.preventDefault();
+
+		// If cursor was in the middle of a word when space or enter was pressed,
+		// then the user is ending their current word. Otherwise ignore this keystroke.
+		// It was probably an accident. 
+		if (cursorPosition != currentWordIndex) {
+			// To end a word, set cursor and current word index to future-text position. If there is no future text
+			// then the challenge is over.
+			if (nextWordIndex) {
+				// This keypress counts as a correct character. give 1 point.
+				Session.set('correctCount', Session.get('correctCount') + 1);
+				updateScore(+correctPoints);
+
+				Session.set('cursorPosition', nextWordIndex);	
+				Session.set('currentWordIndex', nextWordIndex);	
+				// Then set a new future text position.
+				updateNextWordIndex();
+
+				// Clear the textbox because backing up beyond this word is not allowed.
+				event.target.value = "";
+			}
+			else {
+				event.preventDefault();
+				startNewChallenge();
+			}
+		}
+	}
+	// else a regular character was typed.
+	else {
+		// ignore typing if user has typed too many characters for current word.
+		if (nextWordIndex === null || (cursorPosition < nextWordIndex)) {
+			var charTyped = String.fromCharCode(event.charCode);
+			if (charTyped === currentChar()) {
+				Session.set('correctCount', Session.get('correctCount') + 1);
+				updateScore(+correctPoints);
+			}
+			else {
+				// push current cursor position onto the list of errors
+				var errorArray = Session.get('errors');
+				errorArray.push(cursorPosition);
+				Session.set('errors', errorArray);
+				Session.set('errorCount', Session.get('errorCount') + 1);
+				updateScore(-errorPoints);
+			}
+		}
+
+		Session.set('cursorPosition', cursorPosition + 1);
+		if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
+			event.preventDefault();
+			startNewChallenge();
+		}
+	}
+}
+
+function handleKeydown(event) {
+	// handle backspace key
+	if (event.keyCode === 8) {
+		var cursorPosition = Session.get('cursorPosition');
+		var currentWordIndex = Session.get('currentWordIndex');
+		var nextWordIndex = Session.get('nextWordIndex');
+		var points = Session.get('points');
+
+		// if cursor is beyond the current word index, then backing up is allowed.
+		if (cursorPosition > currentWordIndex) {
+			cursorPosition = cursorPosition - 1;	// set new cursor position
+			Session.set('cursorPosition', cursorPosition);
+			
+			if (nextWordIndex === null || (cursorPosition < nextWordIndex)) {
+				// check if a correct or incorrect character is being deleted 
+				// and change the score accordingly.
+				var errorArray = Session.get('errors');
+				if (_.contains(errorArray, cursorPosition)) {
+					// Remove current cursor position from the list of errors.
+					// It should be the last element in the array.
+					
+					var poppedIndex = errorArray.pop();
+
+					// make sure we're popping the correctd index
+					if (poppedIndex !== cursorPosition) {
+						throw "Error index " + poppedIndex + " was popped. Should be " + cursorPosition;
+					}
+
+					Session.set('errors', errorArray);
+					Session.set('errorCount', Session.get('errorCount') - 1);
+					updateScore(+errorPoints);
+				}
+				else {
+					// deleting a correct character reduces the player's score.
+					Session.set('correctCount', Session.get('correctCount') - 1);
+					updateScore(-correctPoints);
+				}
+			}
+		}
+	}
+}
+
 
 
 //////// STARTUP ////////
@@ -150,7 +261,12 @@ Template.gameUI.created = function() {
 	Session.set('errorCount', 0);
 	startNewChallenge();
 
-	$('#typing-textbox').eq(0).focus();
+	$(document).keypress(function(event) {
+		handleKeypress(event);
+	});
+	$(document).keydown(function(event) {
+		handleKeydown(event);
+	});
 }
 
 
@@ -295,119 +411,6 @@ Template.gameUI.helpers({
 //////// EVENT LISTENERS ////////
 
 Template.gameUI.events({
-	'keypress #typing-textbox': function(event) {
-		var cursorPosition = Session.get('cursorPosition');
-		var currentWordIndex = Session.get('currentWordIndex');
-		var nextWordIndex = Session.get('nextWordIndex');
-		var points = Session.get('points');
-		
-		// set cursor to the end of the textbox contents before doing anything.
-		var textContentsLength = event.target.value.length;
-		event.target.setSelectionRange(textContentsLength, textContentsLength);
-
-		// blank space or enter key was pressed.
-		if (event.charCode == 13 || event.charCode == 32) {
-			// Stop default behavior of space bar being pressed. This is to allow 
-			// the textbox to contain just the current word being typed. No useless
-			// blank spaces.
-			event.preventDefault();
-
-			// If cursor was in the middle of a word when space or enter was pressed,
-			// then the user is ending their current word. Otherwise ignore this keystroke.
-			// It was probably an accident. 
-			if (cursorPosition != currentWordIndex) {
-				// To end a word, set cursor and current word index to future-text position. If there is no future text
-				// then the challenge is over.
-				if (nextWordIndex) {
-					// This keypress counts as a correct character. give 1 point.
-					Session.set('correctCount', Session.get('correctCount') + 1);
-					updateScore(+correctPoints);
-
-					Session.set('cursorPosition', nextWordIndex);	
-					Session.set('currentWordIndex', nextWordIndex);	
-					// Then set a new future text position.
-					updateNextWordIndex();
-
-					// Clear the textbox because backing up beyond this word is not allowed.
-					event.target.value = "";
-				}
-				else {
-					event.preventDefault();
-					startNewChallenge();
-				}
-			}
-		}
-		// else a regular character was typed.
-		else {
-			// ignore typing if user has typed too many characters for current word.
-			if (nextWordIndex === null || (cursorPosition < nextWordIndex)) {
-				var charTyped = String.fromCharCode(event.charCode);
-				if (charTyped === currentChar()) {
-					Session.set('correctCount', Session.get('correctCount') + 1);
-					updateScore(+correctPoints);
-				}
-				else {
-					// push current cursor position onto the list of errors
-					var errorArray = Session.get('errors');
-					errorArray.push(cursorPosition);
-					Session.set('errors', errorArray);
-					Session.set('errorCount', Session.get('errorCount') + 1);
-					updateScore(-errorPoints);
-				}
-			}
-
-			Session.set('cursorPosition', cursorPosition + 1);
-			if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
-				event.preventDefault();
-				startNewChallenge();
-			}
-		}
-	},
-	'keydown #typing-textbox': function(event) {
-		// set cursor to the end of the textbox contents before doing anything.
-		var textContentsLength = event.target.value.length;
-		event.target.setSelectionRange(textContentsLength, textContentsLength);
-
-		// handle backspace key
-		if (event.keyCode === 8) {
-			var cursorPosition = Session.get('cursorPosition');
-			var currentWordIndex = Session.get('currentWordIndex');
-			var nextWordIndex = Session.get('nextWordIndex');
-			var points = Session.get('points');
-
-			// if cursor is beyond the current word index, then backing up is allowed.
-			if (cursorPosition > currentWordIndex) {
-				cursorPosition = cursorPosition - 1
-				Session.set('cursorPosition', cursorPosition);
-				
-				if (nextWordIndex === null || (cursorPosition < nextWordIndex)) {
-					// check if a correct or incorrect character is being deleted 
-					// and change the score accordingly.
-					var deletedChar = event.target.value[event.target.value.length - 1];
-					if (deletedChar === currentChar()) {
-						// deleting a correct character reduces the player's score.
-						Session.set('correctCount', Session.get('correctCount') - 1);
-						updateScore(-correctPoints);
-					}
-					else {
-						// Remove current cursor position from the list of errors.
-						// It should be the last element in the array.
-						var errorArray = Session.get('errors');
-						var poppedIndex = errorArray.pop();
-
-						// make sure we're popping the correctd index
-						if (poppedIndex !== cursorPosition) {
-							throw "Error index " + poppedIndex + " was popped. Should be " + cursorPosition;
-						}
-
-						Session.set('errors', errorArray);
-						Session.set('errorCount', Session.get('errorCount') - 1);
-						updateScore(+errorPoints);
-					}
-				}
-			}
-		}
-	},
 	'click #leave-game-button': function() {
 		console.log("leaving game");
 		Meteor.call('leaveGame', Meteor.userId());
