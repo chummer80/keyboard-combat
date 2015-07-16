@@ -82,7 +82,9 @@ html, body {
 		color: white;
 	}
 	#login-name-link, #login-sign-in-link {
-		color: #FF3B26;
+		color: gold;
+		font-weight: bold;
+		font-size: 20px;
 	}
 }
 
@@ -95,7 +97,7 @@ html, body {
 		right: 0;
 		z-index: -1;
 
-		background-image: url('keyboard-background.png');
+		background-image: url('images/keyboard-background.png');
 		background-size: cover;
 		-webkit-filter: blur(6px) brightness(1.2) opacity(50%);
 		-moz-filter: blur(6px) brightness(1.2);

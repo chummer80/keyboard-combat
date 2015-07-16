@@ -118,6 +118,14 @@ function updateScore(delta) {
 	}
 }
 
+function playFightSound() {
+	var $fightSounds = $('audio.fight-sound');
+
+	// play a random sound
+	var index = Math.floor(Math.random() * $fightSounds.length);
+
+	$fightSounds[index].play();
+}
 
 function handleKeypress(event) {
 	var cursorPosition = Session.get('cursorPosition');
@@ -147,14 +155,13 @@ function handleKeypress(event) {
 				Session.set('currentWordIndex', nextWordIndex);	
 				// Then set a new future text position.
 				updateNextWordIndex();
-
-				// Clear the textbox because backing up beyond this word is not allowed.
-				event.target.value = "";
 			}
 			else {
 				event.preventDefault();
 				startNewChallenge();
 			}
+
+			playFightSound();
 		}
 	}
 	// else a regular character was typed.
@@ -261,6 +268,7 @@ Template.gameUI.created = function() {
 	Session.set('errorCount', 0);
 	startNewChallenge();
 
+	// set up typing event handlers
 	$(document).keypress(function(event) {
 		handleKeypress(event);
 	});
