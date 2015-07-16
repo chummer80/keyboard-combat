@@ -161,7 +161,10 @@ function handleKeypress(event) {
 				startNewChallenge();
 			}
 
-			playFightSound();
+			var soundSetting = Meteor.users.findOne({_id: Meteor.userId()}, {fields: {sound: 1}}).sound;
+			if (soundSetting) {
+				playFightSound();
+			}
 		}
 	}
 	// else a regular character was typed.

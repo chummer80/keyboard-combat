@@ -11,6 +11,7 @@ Accounts.onCreateUser(function(options, user) {
 
 	user.wins = 0;
 	user.losses = 0;
+	user.sound = true;
 
 	return user;
 });

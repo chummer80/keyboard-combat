@@ -17,6 +17,17 @@
 					{{/if}}
 					<li>{{> loginButtons}}</li>
 					<li class="divider"></li>
+					<li>
+						<h3>Sound</h3>
+					</li>
+					<li>
+						{{#if soundSetting}}ON{{else}}OFF{{/if}}
+						<div class="switch radius">
+							<input id="soundToggle" type="checkbox" checked="{{soundSetting}}">
+							<label for="soundToggle"></label>
+						</div>
+					</li>
+					<li class="divider"></li>
 					<li>{{> userList}}</li>
 				</ul>
 			</div>
