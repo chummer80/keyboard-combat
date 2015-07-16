@@ -52,9 +52,14 @@ html, body {
 	height: 100%;
 }
 
+.grid-container {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
 
 #page-container {
-	min-height: 100vh;
+	flex-grow: 1;
 	display: flex;
 	align-items: stretch;
 }
@@ -81,15 +86,35 @@ html, body {
 	}
 }
 
-.main-content {
-	background-color: #FFCC00;
-	// height: 100%;
+.main-panel {
+	.main-panel-bg {			
+		position: absolute;
+		bottom: 0;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: -1;
+
+		background-image: url('keyboard-background.png');
+		background-size: cover;
+		-webkit-filter: blur(6px) brightness(1.2) opacity(50%);
+		-moz-filter: blur(6px) brightness(1.2);
+		-o-filter: blur(6px) brightness(1.2);
+		-ms-filter: blur(6px) brightness(1.2);
+		filter: blur(6px) brightness(1.2);
+	}
+
+	.main-panel-content {
+		padding: 10px;
+	}
 }
 
 
 #challenge-area {
 	background-color: white;
 	padding: 5px;
+	border: 1px solid black;
+	border-radius: 3px;
 }
 
 #challenge-text {

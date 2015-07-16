@@ -10,9 +10,12 @@ Meteor.call('velocity/isMirror', function(err, isMirror) {
 var correctPoints = 1;
 var errorPoints = 3;
 
+
+//////// GAME STATE VARS ////////
+
 var gameId, selfIndex, opponentIndex, opponentName = "";
-var gameInProgress = true;
-var finalOpponentScore = 0;
+var gameInProgress;
+var finalOpponentScore;
 var timer, timerStart;
 
 
@@ -140,6 +143,8 @@ Template.gameUI.created = function() {
 			}
 		});
 
+	gameInProgress = true;
+	finalOpponentScore = 0;
 	Session.set('points', 0);
 	Session.set('correctCount', 0);
 	Session.set('errorCount', 0);
