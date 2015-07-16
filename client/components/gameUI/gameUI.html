@@ -1,8 +1,10 @@
 <template name="gameUI">
+	<h1>Head to Head</h1>
 	<div>
-		<p id="challenge-text">
-			<span id="challenge-history">{{{challengeHistory}}}</span><span id="challenge-current">{{challengeCurrent}}</span><span id="challenge-future">{{challengeFuture}}</span>
-		</p>
+		<div id="challenge-area">
+			<p id="challenge-text"><span id="challenge-history">{{{challengeHistory}}}</span><span id="challenge-current">{{challengeCurrent}}</span><span id="challenge-future">{{challengeFuture}}</span>
+			</p>
+		</div>
 		{{#unless isGameOver}}
 			<input id="typing-textbox" type="text" autofocus>
 		{{/unless}}

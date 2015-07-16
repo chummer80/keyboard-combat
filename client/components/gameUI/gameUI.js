@@ -144,6 +144,8 @@ Template.gameUI.created = function() {
 	Session.set('correctCount', 0);
 	Session.set('errorCount', 0);
 	startNewChallenge();
+
+	$('#typing-textbox').eq(0).focus();
 }
 
 

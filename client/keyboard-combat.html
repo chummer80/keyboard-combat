@@ -3,15 +3,32 @@
 </head>
 
 <body>
-	<h1>Keyboard Combat!</h1>
-	{{> loginButtons}}
+	<div id="header" class="row">
+		<div class="small-12 columns">
+			<img id="logo" src="logo.png">
+		</div>
+	</div>
+	<div id="page-container" class="row">
+		<div class="small-3 columns sidebar">
+			<ul class="side-nav">
+				{{#if currentUser}}
+					<li><h3>Logged in as</h3></li>
+				{{/if}}
+				<li>{{> loginButtons}}</li>
+				<li class="divider"></li>
+				<li>{{> userList}}</li>
+			</ul>
+		</div>
 
-	{{#if currentUser}}
-		{{#if inGame}}
-			{{> gameUI}}
-		{{else}}
-			{{> gameLobby}}
-			{{> userList}}
-		{{/if}}
-	{{/if}}
+		<div class="small-9 columns main-content">
+			{{#if currentUser}}
+				{{#if inGame}}
+					{{> gameUI}}
+				{{else}}
+					{{> gameLobby}}
+					
+				{{/if}}
+			{{/if}}
+		</div>
+	</div>
 </body>

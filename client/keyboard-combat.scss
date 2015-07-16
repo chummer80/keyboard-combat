@@ -1,5 +1,6 @@
 @charset "UTF-8";
 
+@import url(http://fonts.googleapis.com/css?family=Special+Elite);
 @import "normalize.scss";
 
 //local Foundation settings file. Copy it from git repo -> scss/foundation/_settings.scss near main .scss file. Then Uncomment the line below.
@@ -47,9 +48,54 @@
 
 /* CSS declarations go here */
 
+html, body {
+	height: 100%;
+}
+
+
+#page-container {
+	min-height: 100vh;
+	display: flex;
+	align-items: stretch;
+}
+
+#header {
+	background-color: black;
+
+	#logo {
+		display: block;
+		margin: 0 auto;
+	}
+}
+
+.sidebar {
+	background-color: dodgerblue;
+	color: white;
+	// height: 100%;
+
+	h3 {
+		color: white;
+	}
+	#login-name-link, #login-sign-in-link {
+		color: #FF3B26;
+	}
+}
+
+.main-content {
+	background-color: #FFCC00;
+	// height: 100%;
+}
+
+
+#challenge-area {
+	background-color: white;
+	padding: 5px;
+}
+
 #challenge-text {
 	white-space: pre-line;
-	font-size: 20px;
+	margin: 0;
+	// font-size: 20px;
 }
 
 #challenge-history {
