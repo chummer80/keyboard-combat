@@ -107,7 +107,8 @@ function endGame() {
 }
 
 function updateScore(delta) {
-	var newScore = Session.get('points') + delta;
+	// don't let scores go negative
+	var newScore = Math.max(Session.get('points') + delta, 0);
 	Session.set('points', newScore);
 	Meteor.call('setScore', gameId, selfIndex, newScore);
 
@@ -197,6 +198,8 @@ function handleKeypress(event) {
 function handleKeydown(event) {
 	// handle backspace key
 	if (event.keyCode === 8) {
+		event.preventDefault();
+
 		var cursorPosition = Session.get('cursorPosition');
 		var currentWordIndex = Session.get('currentWordIndex');
 		var nextWordIndex = Session.get('nextWordIndex');
@@ -415,6 +418,20 @@ Template.gameUI.helpers({
 		else {
 			return finalOpponentScore;
 		}
+	},
+	selfHealthPct: function() {
+		var opponentScore;
+		if (gameInProgress) {
+			var game = Games.findOne({_id: gameId}, {fields: {"players.score": 1}});
+			opponentScore = game.players[opponentIndex].score;
+		}
+		else {
+			opponentScore = finalOpponentScore;
+		}
+		return ((goalScore - opponentScore) / goalScore * 100) + "%";
+	},
+	opponentHealthPct: function() {
+		return ((goalScore - Session.get('points')) / goalScore * 100) + "%";
 	}
 });
 
