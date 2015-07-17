@@ -166,6 +166,12 @@ function handleKeypress(event) {
 			if (soundSetting) {
 				playFightSound();
 			}
+
+			//make character go into attack animation briefly
+			$('#left-char').removeClass('anim-default').addClass('anim-punch');
+			Meteor.setTimeout(function() {
+				$('#left-char').removeClass('anim-punch').addClass('anim-default');
+			}, 300);
 		}
 	}
 	// else a regular character was typed.

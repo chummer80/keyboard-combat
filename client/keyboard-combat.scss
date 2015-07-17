@@ -76,7 +76,7 @@ html, body {
 .sidebar {
 	background-color: dodgerblue;
 	color: white;
-	// height: 100%;
+
 	* {
 		margin-left: auto;
 		margin-right: auto;
@@ -149,9 +149,61 @@ html, body {
 		}
 		.health-bar-remaining {
 			height: 20px;
-			// width: 50%;
 			background-color: gold;
 		}
+	}
+
+	#characters {
+		#left-char {
+			position: absolute;
+			right: 3px;
+		}
+
+		@-webkit-keyframes goku-default {
+			0%{	background-position: 0px 0px;    }
+			100%{ background-position: 0px -621px;  }
+		}
+		.anim-default {
+			background-image: url('images/goku_default.png');
+			background-size: 99px;
+			
+			width: 99px;
+			height: 207px;
+
+			-webkit-animation-name: goku-default; 
+			-webkit-animation-duration: 0.3s; 
+			-webkit-animation-iteration-count: infinite; 
+			-webkit-animation-direction: alternate;
+			-webkit-animation-timing-function: steps(3);
+		}
+
+		@-webkit-keyframes goku-punch {
+			0%{	background-position: 0px 0px;    }
+			100%{ background-position: 0px -399px;  }
+		}
+		.anim-punch {
+			background-image: url('images/goku_punch.png');
+			background-size: 132px;
+			
+			width: 132px;
+			height: 200px;
+
+			-webkit-animation-name: goku-punch; 
+			-webkit-animation-duration: 0.3s; 
+			-webkit-animation-iteration-count: infinite; 
+			-webkit-animation-direction: normal;
+			-webkit-animation-timing-function: steps(2);
+		}
+
+		
+
+		#right-char {
+			margin-left: 3px;
+			-ms-transform: rotateY(180deg); /* IE 9 */
+			-webkit-transform: rotateY(180deg); /* Chrome, Safari, Opera */
+			transform: rotateY(180deg);
+		}
+
 	}
 }
 
@@ -165,7 +217,7 @@ html, body {
 #challenge-text {
 	white-space: pre-line;
 	margin: 0;
-	font-size: 20px;
+	font-size: 16px;
 }
 
 #challenge-history {

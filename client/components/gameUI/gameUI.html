@@ -2,8 +2,8 @@
 	<div>
 		<div id="graphics-area">
 			<div id="name-row" class="row">
-				<div class="small-6 columns"><h5>{{currentUser.profile.name}}</h5></div>
-				<div class="small-6 columns text-right"><h5>{{opponentName}}</h5></div>
+				<div class="small-6 columns"><h4>{{currentUser.profile.name}}</h4></div>
+				<div class="small-6 columns text-right"><h4>{{opponentName}}</h4></div>
 			</div>
 			<div id="health-bars" class="row small-collapse">
 				<div id="left-bar" class="small-6 columns">
@@ -13,6 +13,14 @@
 				<div id="right-bar" class="small-6 columns">
 					<div class="health-bar-base"></div>
 					<div class="health-bar-remaining" style="width:{{opponentHealthPct}}"></div>
+				</div>
+			</div>
+			<div id="characters" class="row small-collapse">
+				<div class="small-6 columns">
+					<div id="left-char" class="anim-default"></div>
+				</div>
+				<div class="small-6 columns">
+					<div id="right-char" class="anim-default"></div>
 				</div>
 			</div>
 		</div>
