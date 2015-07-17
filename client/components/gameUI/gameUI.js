@@ -191,9 +191,9 @@ function handleKeypress(event) {
 				Session.set('errorCount', Session.get('errorCount') + 1);
 				updateScore(-errorPoints);
 			}
+			Session.set('cursorPosition', cursorPosition + 1);
 		}
 
-		Session.set('cursorPosition', cursorPosition + 1);
 		if (Session.get('cursorPosition') >= Session.get('challengeText').length) {
 			event.preventDefault();
 			startNewChallenge();
