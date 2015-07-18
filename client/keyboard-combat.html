@@ -10,27 +10,7 @@
 			</div>
 		</div>
 		<div id="page-container" class="row">
-			<div class="small-3 columns sidebar">
-				<ul class="side-nav">
-					{{#if currentUser}}
-						<li><h3>Logged in as</h3></li>
-					{{/if}}
-					<li>{{> loginButtons}}</li>
-					<li class="divider"></li>
-					<li>
-						<h3>Sound</h3>
-					</li>
-					<li>
-						{{#if soundSetting}}ON{{else}}OFF{{/if}}
-						<div class="switch radius">
-							<input id="soundToggle" type="checkbox" checked="{{soundSetting}}">
-							<label for="soundToggle"></label>
-						</div>
-					</li>
-					<li class="divider"></li>
-					<li>{{> userList}}</li>
-				</ul>
-			</div>
+			{{> sidebar}}
 
 			<div class="small-9 columns main-panel">
 				<div class="main-panel-bg"></div>

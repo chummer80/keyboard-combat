@@ -16,10 +16,6 @@ Template.body.helpers({
 	inGame: function() {
 		var gamesWithCurrentUser = Games.find({"players.id": Meteor.userId(), status: "playing"});
 		return !!gamesWithCurrentUser.count();
-	},
-	soundSetting: function() {
-		var soundSetting = Meteor.users.findOne({_id: Meteor.userId()}).sound;
-		return soundSetting;
 	}
 });
 
