@@ -16,10 +16,10 @@ Template.gameLobby.helpers({
 		return findingGame();
 	},
 	wins: function() {
-		return Meteor.users.findOne({_id: Meteor.userId()}).wins;
+		return Meteor.users.findOne({_id: Meteor.userId()}).wins || 0;
 	},
 	losses: function() {
-		return Meteor.users.findOne({_id: Meteor.userId()}).losses;
+		return Meteor.users.findOne({_id: Meteor.userId()}).losses || 0;
 	},
 	winRate: function() {
 		var user = Meteor.users.findOne({_id: Meteor.userId()});
