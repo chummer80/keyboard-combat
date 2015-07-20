@@ -5,9 +5,9 @@
 				<li><h3>Logged in as</h3></li>
 			{{/if}}
 			<li>{{> loginButtons}}</li>
-			<li class="divider"></li>
 
 			{{#if currentUser}}
+				<li class="divider"></li>
 				<li>
 					<h3>Sound</h3>
 				</li>
@@ -18,10 +18,12 @@
 						<label for="soundToggle"></label>
 					</div>
 				</li>
-				<li class="divider"></li>
 			{{/if}}
 			
-			<li>{{> userList}}</li>
+			{{#if isAnyoneOnline}}
+				<li class="divider"></li>
+				<li>{{> userList}}</li>
+			{{/if}}
 		</ul>
 	</div>
 </template>
