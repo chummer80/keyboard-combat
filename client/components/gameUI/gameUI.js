@@ -96,6 +96,8 @@ function updateNextWordIndex() {
 }
 
 function endGame() {
+	Meteor.call('setGameStatus', gameId, "finished");
+
 	var game = Games.findOne({_id: gameId}, {fields: {winner: 1, "players.score": 1}});
 	gameInProgress = game.winner === null;
 	finalOpponentScore = game.players[opponentIndex].score;
@@ -408,7 +410,7 @@ Template.gameUI.helpers({
 		var accuracy = correctCount / (correctCount + errorCount);
 
 		if (correctCount === 0	&& errorCount === 0) {
-			return "0.00%"
+			return "0.00%";
 		}
 		else {
 			return (accuracy * 100).toFixed(2) + "%";
