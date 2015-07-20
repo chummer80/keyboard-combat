@@ -4,9 +4,9 @@ Accounts.onCreateUser(function(options, user) {
 	}
 
 	// if user signs up with email, make that his profile name
-	if (options.email) {
+	if (options.username) {
 		user.profile = user.profile || {};
-		user.profile.name = options.email;
+		user.profile.name = options.username;
 	}
 
 	user.wins = 0;
