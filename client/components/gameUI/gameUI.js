@@ -120,7 +120,26 @@ function updateScore(delta) {
 		Meteor.clearTimeout(animTimer);
 		$('#left-char').removeClass('anim-default anim-punch').addClass('anim-win');
 
+		playSound("win");
+
 		endGame();
+	}
+}
+
+function playSound(sound) {
+	var soundSetting = Meteor.users.findOne({_id: Meteor.userId()}, {fields: {sound: 1}}).sound;
+	if (soundSetting) {
+		switch(sound) {
+			case "fight":
+				playFightSound();
+				break;
+			case "win":
+				$('audio#win')[0].play();
+				break;
+			case "lose":
+				$('audio#lose')[0].play();
+				break;
+		}
 	}
 }
 
@@ -167,10 +186,7 @@ function handleKeypress(event) {
 				startNewChallenge();
 			}
 
-			var soundSetting = Meteor.users.findOne({_id: Meteor.userId()}, {fields: {sound: 1}}).sound;
-			if (soundSetting) {
-				playFightSound();
-			}
+			playSound("fight");
 
 			// cancel any previous anim timer that might be active before setting a new anim timer
 			Meteor.clearTimeout(animTimer);
@@ -279,6 +295,8 @@ Template.gameUI.created = function() {
 				if (fields.winner === opponentIndex) {
 					Meteor.clearTimeout(animTimer);
 					$('#left-char').removeClass('anim-default anim-punch').addClass('anim-lose');
+
+					playSound("lose");
 
 					endGame();
 				}
