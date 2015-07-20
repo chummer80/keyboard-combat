@@ -16,7 +16,7 @@ var errorPoints = 3;
 var gameId, selfIndex, opponentIndex, opponentName = "";
 var gameInProgress;
 var finalOpponentScore;
-var timer, timerStart;
+var timer, timerStart, animTimer;
 
 
 //////// FUNCTIONS ////////
@@ -115,6 +115,11 @@ function updateScore(delta) {
 	// check for end of game condition
 	if (newScore >= goalScore) {
 		Meteor.call('setWinner', gameId, selfIndex);
+
+		//make character go into win animation
+		Meteor.clearTimeout(animTimer);
+		$('#left-char').removeClass('anim-default anim-punch').addClass('anim-win');
+
 		endGame();
 	}
 }
@@ -167,9 +172,11 @@ function handleKeypress(event) {
 				playFightSound();
 			}
 
-			//make character go into attack animation briefly
+			// cancel any previous anim timer that might be active before setting a new anim timer
+			Meteor.clearTimeout(animTimer);
+			// make character go into attack animation briefly
 			$('#left-char').removeClass('anim-default').addClass('anim-punch');
-			Meteor.setTimeout(function() {
+			animTimer = Meteor.setTimeout(function() {
 				$('#left-char').removeClass('anim-punch').addClass('anim-default');
 			}, 300);
 		}
@@ -258,7 +265,7 @@ Template.gameUI.created = function() {
 
 	// start timer
 	timerStart = Date.now();
-	timer = setInterval(function() {
+	timer = Meteor.setInterval(function() {
 		Session.set('timer', Date.now() - timerStart);
 	}, 100);
 
@@ -267,7 +274,12 @@ Template.gameUI.created = function() {
 	Games.find({_id: gameId}, {fields: {winner: 1}})
 		.observeChanges({
 			changed: function(id, fields) {
-				if (fields.winner !== null) {
+
+				// check if this player lost
+				if (fields.winner === opponentIndex) {
+					Meteor.clearTimeout(animTimer);
+					$('#left-char').removeClass('anim-default anim-punch').addClass('anim-lose');
+
 					endGame();
 				}
 			}

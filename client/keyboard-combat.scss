@@ -154,9 +154,27 @@ html, body {
 	}
 
 	#characters {
-		#left-char {
+		height: 219px;
+
+		.columns {
+			height: 100%;
+		}
+
+		.character {
 			position: absolute;
+			bottom: 0;
+			background-size: 100%;
+		}
+
+		#left-char {
 			right: 3px;
+		}
+
+		#right-char {
+			margin-left: 3px;
+			-ms-transform: rotateY(180deg); /* IE 9 */
+			-webkit-transform: rotateY(180deg); /* Chrome, Safari, Opera */
+			transform: rotateY(180deg);
 		}
 
 		@-webkit-keyframes goku-default {
@@ -165,7 +183,7 @@ html, body {
 		}
 		.anim-default {
 			background-image: url('images/goku_default.png');
-			background-size: 99px;
+			// background-size: 99px;
 			
 			width: 99px;
 			height: 207px;
@@ -183,7 +201,7 @@ html, body {
 		}
 		.anim-punch {
 			background-image: url('images/goku_punch.png');
-			background-size: 132px;
+			// background-size: 132px;
 			
 			width: 132px;
 			height: 200px;
@@ -195,14 +213,46 @@ html, body {
 			-webkit-animation-timing-function: steps(2);
 		}
 
+		@-webkit-keyframes goku-win {
+			0%{	background-position: 0px 0px;    }
+			100%{ background-position: 0px -1095px;  }
+		}
+		.anim-win {
+			background-image: url('images/goku_win.png');
+			// background-size: 42px;
+			
+			width: 126px;
+			height: 219px;
+
+			-webkit-animation-name: goku-win; 
+			-webkit-animation-duration: 0.8s; 
+			-webkit-animation-iteration-count: infinite; 
+			-webkit-animation-direction: normal;
+			-webkit-animation-timing-function: steps(5);
+		}
+
+		@-webkit-keyframes goku-lose {
+			0%{	background-position: 0px 0px;    }
+			100%{ background-position: 0px -432px;  }
+		}
+		.anim-lose {
+			background-image: url('images/goku_lose.png');
+			background-repeat: no-repeat;
+			background-size: 100%;
+			
+			width: 219px;
+			height: 144px;
+
+			-webkit-animation-name: goku-lose; 
+			-webkit-animation-duration: 0.8s; 
+			-webkit-animation-iteration-count: 1; 
+			-webkit-animation-direction: normal;
+			-webkit-animation-timing-function: steps(3);
+			-webkit-animation-fill-mode:forwards;
+		}
 		
 
-		#right-char {
-			margin-left: 3px;
-			-ms-transform: rotateY(180deg); /* IE 9 */
-			-webkit-transform: rotateY(180deg); /* Chrome, Safari, Opera */
-			transform: rotateY(180deg);
-		}
+		
 
 	}
 }
