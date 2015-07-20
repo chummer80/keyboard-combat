@@ -10,6 +10,23 @@ Meteor.call('velocity/isMirror', function(err, isMirror) {
 var correctPoints = 1;
 var errorPoints = 3;
 
+var miscAnims = [
+	'anim-default',
+	'anim-win',
+	'anim-lose'
+];
+
+// attack animations names and how long they should play
+var attackAnimTimes = {
+	'anim-punch': 300,
+	'anim-power-punch': 500,
+	'anim-kick': 300,
+	'anim-power-kick': 500
+};
+
+var attackAnims = _.keys(attackAnimTimes);
+
+var allAnims = _.union(miscAnims, attackAnims);
 
 //////// GAME STATE VARS ////////
 
@@ -119,13 +136,32 @@ function updateScore(delta) {
 		Meteor.call('setWinner', gameId, selfIndex);
 
 		//make character go into win animation
-		Meteor.clearTimeout(animTimer);
-		$('#left-char').removeClass('anim-default anim-punch').addClass('anim-win');
+		playCharAnim($('#left-char'), 'anim-win');
 
 		playSound("win");
 
 		endGame();
 	}
+}
+
+function playCharAnim($char, anim) {
+	// get a list of animations classes to remove
+	var otherAnims = _.without(allAnims, anim);
+	var otherAnimsString = otherAnims.join(' ');
+
+	Meteor.clearTimeout(animTimer);
+	$char.removeClass(otherAnimsString).addClass(anim);
+}
+
+function playAttackAnim($char) {
+	// pick a random attack animation and play it.
+	var attackAnim = attackAnims[_.random(attackAnims.length - 1)];
+
+	playCharAnim($char, attackAnim);
+
+	animTimer = Meteor.setTimeout(function() {
+		playCharAnim($char, 'anim-default');
+	}, attackAnimTimes[attackAnim]);
 }
 
 function playSound(sound) {
@@ -149,7 +185,7 @@ function playFightSound() {
 	var $fightSounds = $('audio.fight-sound');
 
 	// play a random sound
-	var index = Math.floor(Math.random() * $fightSounds.length);
+	var index = _.random($fightSounds.length - 1);
 
 	$fightSounds[index].play();
 }
@@ -190,13 +226,8 @@ function handleKeypress(event) {
 
 			playSound("fight");
 
-			// cancel any previous anim timer that might be active before setting a new anim timer
-			Meteor.clearTimeout(animTimer);
 			// make character go into attack animation briefly
-			$('#left-char').removeClass('anim-default').addClass('anim-punch');
-			animTimer = Meteor.setTimeout(function() {
-				$('#left-char').removeClass('anim-punch').addClass('anim-default');
-			}, 300);
+			playAttackAnim($('#left-char'));
 		}
 	}
 	// else a regular character was typed.
@@ -295,8 +326,7 @@ Template.gameUI.created = function() {
 
 				// check if this player lost
 				if (fields.winner === opponentIndex) {
-					Meteor.clearTimeout(animTimer);
-					$('#left-char').removeClass('anim-default anim-punch').addClass('anim-lose');
+					playCharAnim($('#left-char'), 'anim-lose');
 
 					playSound("lose");
 

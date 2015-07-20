@@ -111,7 +111,7 @@ html, body {
 		right: 0;
 		z-index: -1;
 
-		background-image: url('images/keyboard-background.png');
+		background-image: url('images/keyboard-background-compressed.png');
 		background-size: cover;
 		-webkit-filter: blur(6px) brightness(1.2) opacity(50%);
 		-moz-filter: blur(6px) brightness(1.2);
@@ -177,13 +177,13 @@ html, body {
 			transform: rotateY(180deg);
 		}
 
-		@-webkit-keyframes goku-default {
-			0%{	background-position: 0px 0px;    }
-			100%{ background-position: 0px -621px;  }
-		}
 		.anim-default {
+			@-webkit-keyframes goku-default {
+				0%{	background-position: 0px 0px; }
+				100%{ background-position: 0px -621px; }
+			}
+
 			background-image: url('images/goku_default.png');
-			// background-size: 99px;
 			
 			width: 99px;
 			height: 207px;
@@ -195,13 +195,13 @@ html, body {
 			-webkit-animation-timing-function: steps(3);
 		}
 
-		@-webkit-keyframes goku-punch {
-			0%{	background-position: 0px 0px;    }
-			100%{ background-position: 0px -399px;  }
-		}
 		.anim-punch {
+			@-webkit-keyframes goku-punch {
+				0%{	background-position: 0px 0px; }
+				100%{ background-position: 0px -399px; }
+			}
+
 			background-image: url('images/goku_punch.png');
-			// background-size: 132px;
 			
 			width: 132px;
 			height: 200px;
@@ -213,13 +213,67 @@ html, body {
 			-webkit-animation-timing-function: steps(2);
 		}
 
-		@-webkit-keyframes goku-win {
-			0%{	background-position: 0px 0px;    }
-			100%{ background-position: 0px -1095px;  }
+		.anim-power-punch {
+			@-webkit-keyframes goku-power-punch {
+				0%{	background-position: 0px 0px; }
+				100%{ background-position: 0px -744px; }
+			}
+
+			background-image: url('images/goku_power-punch.png');
+			
+			width: 195px;
+			height: 186px;
+
+			-webkit-animation-name: goku-power-punch; 
+			-webkit-animation-duration: 0.5s; 
+			-webkit-animation-iteration-count: infinite; 
+			-webkit-animation-direction: normal;
+			-webkit-animation-timing-function: steps(4);
 		}
+
+		.anim-kick {
+			@-webkit-keyframes goku-kick {
+				0%{	background-position: 0px 0px; }
+				100%{ background-position: 0px -372px; }
+			}
+
+			background-image: url('images/goku_kick.png');
+			
+			width: 153px;
+			height: 186px;
+
+			-webkit-animation-name: goku-kick; 
+			-webkit-animation-duration: 0.3s; 
+			-webkit-animation-iteration-count: infinite; 
+			-webkit-animation-direction: normal;
+			-webkit-animation-timing-function: steps(2);
+		}
+
+		.anim-power-kick {
+			@-webkit-keyframes goku-power-kick {
+				0%{	background-position: 0px 0px; }
+				100%{ background-position: 0px -840px; }
+			}
+
+			background-image: url('images/goku_power-kick.png');
+			
+			width: 219px;
+			height: 210px;
+
+			-webkit-animation-name: goku-power-kick; 
+			-webkit-animation-duration: 0.5s; 
+			-webkit-animation-iteration-count: infinite; 
+			-webkit-animation-direction: normal;
+			-webkit-animation-timing-function: steps(4);
+		}
+
 		.anim-win {
+			@-webkit-keyframes goku-win {
+				0%{	background-position: 0px 0px; }
+				100%{ background-position: 0px -1095px; }
+			}
+
 			background-image: url('images/goku_win.png');
-			// background-size: 42px;
 			
 			width: 126px;
 			height: 219px;
@@ -231,11 +285,12 @@ html, body {
 			-webkit-animation-timing-function: steps(5);
 		}
 
-		@-webkit-keyframes goku-lose {
-			0%{	background-position: 0px 0px;    }
-			100%{ background-position: 0px -432px;  }
-		}
 		.anim-lose {
+			@-webkit-keyframes goku-lose {
+				0%{	background-position: 0px 0px; }
+				100%{ background-position: 0px -432px; }
+			}
+
 			background-image: url('images/goku_lose.png');
 			background-repeat: no-repeat;
 			background-size: 100%;
