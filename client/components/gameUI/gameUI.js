@@ -46,7 +46,7 @@ function startNewChallenge() {
 	Session.set('errors', []);
 
 	// this is the index of the current character within the challenge text.
-	Session.set('cursorPosition', 0);	
+	Session.set('cursorPosition', 0);
 
 	Meteor.call('velocity/isMirror', function(err, isMirror) {
 		if (isMirror) {

@@ -65,7 +65,7 @@ html, body {
 }
 
 #header {
-	background-color: black;
+	background-color: dodgerblue;//black;
 
 	#logo {
 		display: block;
@@ -114,10 +114,10 @@ html, body {
 		background-image: url('images/keyboard-background-compressed.png');
 		background-size: cover;
 		-webkit-filter: blur(6px) brightness(1.2) opacity(50%);
-		-moz-filter: blur(6px) brightness(1.2);
-		-o-filter: blur(6px) brightness(1.2);
-		-ms-filter: blur(6px) brightness(1.2);
-		filter: blur(6px) brightness(1.2);
+		-moz-filter: blur(6px) brightness(1.2) opacity(50%);
+		-o-filter: blur(6px) brightness(1.2) opacity(50%);
+		-ms-filter: blur(6px) brightness(1.2) opacity(50%);
+		filter: blur(6px) brightness(1.2) opacity(50%);
 	}
 
 	.main-panel-content {
