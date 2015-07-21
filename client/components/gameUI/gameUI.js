@@ -116,7 +116,7 @@ function endGame() {
 	Meteor.call('setGameStatus', gameId, "finished");
 
 	var game = Games.findOne({_id: gameId}, {fields: {winner: 1, "players.score": 1}});
-	gameInProgress = game.winner === null;
+	gameInProgress = false;
 	finalOpponentScore = game.players[opponentIndex].score;
 	clearInterval(timer);
 
@@ -350,8 +350,8 @@ Template.gameUI.created = function() {
 
 					playSound("lose");
 
-					endGame();
 				}
+				endGame();
 			}
 		});
 
@@ -394,7 +394,9 @@ Template.gameUI.helpers({
 			// Mark errors within this text with spans of class 'challenge-error'
 			text = text.split("");
 			_.each(Session.get('errors'), function(errorIndex) {
-				text[errorIndex] = '<span class="challenge-error">' + text[errorIndex] + '</span>';
+				// use an underscore instead of blank space to be able to highlight it in red.
+				var errorChar = (text[errorIndex] === " ") ? "\u0332 " : text[errorIndex];
+				text[errorIndex] = '<span class="challenge-error">' + errorChar + '</span>';
 			});
 			text = text.join("");
 		}
@@ -411,8 +413,10 @@ Template.gameUI.helpers({
 		var cursorPosition = Session.get('cursorPosition');
 
 		if (challengeText) {
-			if (nextWordIndex) {
-				// return challengeText.substring(currentWordIndex, nextWordIndex);
+			if (currentChar() === " ") {
+				return "\u0332 ";
+			}
+			else if (nextWordIndex) {
 				return challengeText.substring(Math.min(cursorPosition, nextWordIndex), nextWordIndex);
 			}
 			else {
