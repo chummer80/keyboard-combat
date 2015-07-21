@@ -207,11 +207,31 @@ function handleKeypress(event) {
 		// then the user is ending their current word. Otherwise ignore this keystroke.
 		// It was probably an accident. 
 		if (cursorPosition != currentWordIndex) {
+
+			// determine whether the word that just ended had an error in it or not.
+			// if word was ended early, it had an error.
+			var hasError = (currentChar() !== " ") && (currentChar() !== "\n");
+
+			// check if an incorrect char was typed between currentWordIndex and cursorPosition.
+			if (!hasError) {
+				var errors = Session.get('errors');
+				for (var i = 0; i < errors.length; i++) {
+					if (errors[i] >= currentWordIndex && errors[i] <= cursorPosition) {
+						hasError = true;
+						break;
+					}
+				}
+			}
+
+			if (hasError) {
+				Session.set('errorWordCount', Session.get('errorWordCount') + 1);
+			}
+
 			// To end a word, set cursor and current word index to future-text position. If there is no future text
 			// then the challenge is over.
 			if (nextWordIndex) {
 				// This keypress counts as a correct character. give 1 point.
-				Session.set('correctCount', Session.get('correctCount') + 1);
+				Session.set('correctCharCount', Session.get('correctCharCount') + 1);
 				updateScore(+correctPoints);
 
 				Session.set('cursorPosition', nextWordIndex);	
@@ -236,7 +256,7 @@ function handleKeypress(event) {
 		if (nextWordIndex === null || (cursorPosition < nextWordIndex)) {
 			var charTyped = String.fromCharCode(event.charCode);
 			if (charTyped === currentChar()) {
-				Session.set('correctCount', Session.get('correctCount') + 1);
+				Session.set('correctCharCount', Session.get('correctCharCount') + 1);
 				updateScore(+correctPoints);
 			}
 			else {
@@ -244,7 +264,7 @@ function handleKeypress(event) {
 				var errorArray = Session.get('errors');
 				errorArray.push(cursorPosition);
 				Session.set('errors', errorArray);
-				Session.set('errorCount', Session.get('errorCount') + 1);
+				Session.set('errorCharCount', Session.get('errorCharCount') + 1);
 				updateScore(-errorPoints);
 			}
 			Session.set('cursorPosition', cursorPosition + 1);
@@ -288,12 +308,12 @@ function handleKeydown(event) {
 					}
 
 					Session.set('errors', errorArray);
-					Session.set('errorCount', Session.get('errorCount') - 1);
+					Session.set('errorCharCount', Session.get('errorCharCount') - 1);
 					updateScore(+errorPoints);
 				}
 				else {
 					// deleting a correct character reduces the player's score.
-					Session.set('correctCount', Session.get('correctCount') - 1);
+					Session.set('correctCharCount', Session.get('correctCharCount') - 1);
 					updateScore(-correctPoints);
 				}
 			}
@@ -338,8 +358,9 @@ Template.gameUI.created = function() {
 	gameInProgress = true;
 	finalOpponentScore = 0;
 	Session.set('points', 0);
-	Session.set('correctCount', 0);
-	Session.set('errorCount', 0);
+	Session.set('correctCharCount', 0);
+	Session.set('errorCharCount', 0);
+	Session.set('errorWordCount', 0);
 	startNewChallenge();
 
 	// set up typing event handlers
@@ -428,18 +449,24 @@ Template.gameUI.helpers({
 	goalScore: function() {
 		return goalScore;
 	},
-	correctCount: function() {
-		return Session.get('correctCount');
+	correctCharCount: function() {
+		return Session.get('correctCharCount');
 	},
-	errorCount: function() {
-		return Session.get('errorCount') + " : " + Session.get('errors');
+	errorCharCount: function() {
+		return Session.get('errorCharCount') + " : " + Session.get('errors');
+	},
+	totalCharCount: function() {
+		return Session.get('errorCharCount') + Session.get('correctCharCount');
+	},
+	errorWordCount: function() {
+		return Session.get('errorWordCount');
 	},
 	accuracy: function() {
-		var correctCount = Session.get('correctCount');
-		var errorCount = Session.get('errorCount');
-		var accuracy = correctCount / (correctCount + errorCount);
+		var correctCharCount = Session.get('correctCharCount');
+		var errorCharCount = Session.get('errorCharCount');
+		var accuracy = correctCharCount / (correctCharCount + errorCharCount);
 
-		if (correctCount === 0	&& errorCount === 0) {
+		if (correctCharCount === 0	&& errorCharCount === 0) {
 			return "0.00%";
 		}
 		else {
@@ -458,9 +485,9 @@ Template.gameUI.helpers({
 		return minStr + ":" + secStr;
 	},
 	wpm: function() {
-		var totalChars = Session.get('correctCount') + Session.get('errorCount');
+		var totalChars = Session.get('correctCharCount') + Session.get('errorCharCount');
 		var minutes = Session.get('timer') / 1000 / 60;
-		var netWpm = (totalChars / 5 - Session.get('errorCount')) / minutes;
+		var netWpm = (totalChars / 5 - Session.get('errorWordCount')) / minutes;
 		return Math.round(netWpm);
 	},
 	isWinner: function() {

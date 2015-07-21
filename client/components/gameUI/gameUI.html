@@ -42,7 +42,9 @@
 
 		<h3>Time Elapsed: {{timer}}</h3>
 		{{#if isGameOver}}
+			<h3>Characters Typed: {{totalCharCount}}</h3>
 			<h3 id="accuracy">Accuracy: {{accuracy}}</h3>
+			<h3>Words with Errors: {{errorWordCount}}</h3>
 			<h3 id="wpm">Words Per Minute: {{wpm}}</h3>
 			<button id="leave-game-button">Back to Lobby</button>
 		{{/if}}
