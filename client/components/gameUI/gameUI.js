@@ -30,9 +30,8 @@ var allAnims = _.union(miscAnims, attackAnims);
 
 //////// GAME STATE VARS ////////
 
-var gameId, selfIndex, opponentIndex, opponentName = "";
-var gameInProgress;
-var finalOpponentScore;
+var gameId, selfIndex, opponentIndex, opponentName = "", lastOppAnim = "";
+var gameInProgress, finalOpponentScore;
 var timer, timerStart, animTimer;
 
 
@@ -131,12 +130,12 @@ function updateScore(delta) {
 	Session.set('points', newScore);
 	Meteor.call('setScore', gameId, selfIndex, newScore);
 
-	// check for end of game condition
+	// check for winning end of game condition
 	if (newScore >= goalScore) {
 		Meteor.call('setWinner', gameId, selfIndex);
 
 		//make character go into win animation
-		playCharAnim($('#left-char'), 'anim-win');
+		playCharAnim('anim-win', true);
 
 		playSound("win");
 
@@ -144,23 +143,30 @@ function updateScore(delta) {
 	}
 }
 
-function playCharAnim($char, anim) {
+function playCharAnim(anim, isSelfAnim) {
+
+	// If this is a self-animation, emit the animation to the opponent's client 
+	// by putting the animation name into the Game document
+	if (isSelfAnim) {
+		Meteor.call('setCharAnim', gameId, selfIndex, anim);
+		Meteor.clearTimeout(animTimer);
+	}
+	
 	// get a list of animations classes to remove
 	var otherAnims = _.without(allAnims, anim);
 	var otherAnimsString = otherAnims.join(' ');
-
-	Meteor.clearTimeout(animTimer);
+	var $char = isSelfAnim ? $('#left-char') : $('#right-char');
 	$char.removeClass(otherAnimsString).addClass(anim);
 }
 
-function playAttackAnim($char) {
+function playSelfAttackAnim() {
 	// pick a random attack animation and play it.
 	var attackAnim = attackAnims[_.random(attackAnims.length - 1)];
 
-	playCharAnim($char, attackAnim);
+	playCharAnim(attackAnim, true);
 
 	animTimer = Meteor.setTimeout(function() {
-		playCharAnim($char, 'anim-default');
+		playCharAnim('anim-default', true);
 	}, attackAnimTimes[attackAnim]);
 }
 
@@ -247,7 +253,7 @@ function handleKeypress(event) {
 			playSound("fight");
 
 			// make character go into attack animation briefly
-			playAttackAnim($('#left-char'));
+			playSelfAttackAnim();
 		}
 	}
 	// else a regular character was typed.
@@ -346,7 +352,7 @@ Template.gameUI.created = function() {
 
 				// check if this player lost
 				if (fields.winner === opponentIndex) {
-					playCharAnim($('#left-char'), 'anim-lose');
+					playCharAnim('anim-lose', true);
 
 					playSound("lose");
 
@@ -354,6 +360,19 @@ Template.gameUI.created = function() {
 				endGame();
 			}
 		});
+
+	// watch the opponent's animation flag in the game data in order to know
+	// which animation to play for the opponent's character.
+	Games.find({_id: gameId}, {fields: {"players.anim": 1}})
+		.observeChanges({
+			changed: function(id, fields) {
+				if (lastOppAnim !== fields.players[opponentIndex].anim) {
+					lastOppAnim = fields.players[opponentIndex].anim;
+					playCharAnim(lastOppAnim, false);
+				}
+			}
+		});
+
 
 	gameInProgress = true;
 	finalOpponentScore = 0;
@@ -370,6 +389,10 @@ Template.gameUI.created = function() {
 	$(document).keydown(function(event) {
 		handleKeydown(event);
 	});
+
+	// start initial character animations
+	playCharAnim('anim-default', true);
+	playCharAnim('anim-default', false);
 }
 
 
@@ -395,7 +418,7 @@ Template.gameUI.helpers({
 			text = text.split("");
 			_.each(Session.get('errors'), function(errorIndex) {
 				// use an underscore instead of blank space to be able to highlight it in red.
-				var errorChar = (text[errorIndex] === " ") ? "\u0332 " : text[errorIndex];
+				var errorChar = (text[errorIndex] === " ") ? " \u0332" : text[errorIndex];
 				text[errorIndex] = '<span class="challenge-error">' + errorChar + '</span>';
 			});
 			text = text.join("");
@@ -414,7 +437,7 @@ Template.gameUI.helpers({
 
 		if (challengeText) {
 			if (currentChar() === " ") {
-				return "\u0332 ";
+				return " \u0332";
 			}
 			else if (nextWordIndex) {
 				return challengeText.substring(Math.min(cursorPosition, nextWordIndex), nextWordIndex);
@@ -503,7 +526,7 @@ Template.gameUI.helpers({
 		return game.winner === opponentIndex;
 	},
 	isGameOver: function() {
-		var game = Games.findOne({_id: gameId}, {fields: {winner: 1, "players.score": 1}});
+		var game = Games.findOne({_id: gameId}, {fields: {winner: 1}});
 	 	return game.winner !== null;
 	},
 	opponentName: function() {
