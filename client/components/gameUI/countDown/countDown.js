@@ -1,6 +1,6 @@
 var timerStates = ["3", "2", "1", "GO!"];
 var stateIndex, gameId;
-var $timerUI, timer;
+var $timerUI, countdownTimer;
 
 function stepTimer() {
 	stateIndex = ++stateIndex || 0;
@@ -22,9 +22,9 @@ Template.countDown.rendered = function() {
 
 	// reset the countdown or the state will persist between games
 	stateIndex = -1;
-	timer = Meteor.setInterval(stepTimer, 1000);
+	countdownTimer = Meteor.setInterval(stepTimer, 1000);
 };
 
 Template.countDown.destroyed = function() {
-	Meteor.clearInterval(timer);
+	Meteor.clearInterval(countdownTimer);
 };

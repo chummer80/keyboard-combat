@@ -38,7 +38,7 @@ var timer, timerStart, animTimer;
 //////// FUNCTIONS ////////
 
 function startNewChallenge() {
-	Session.set('timer', 0);
+	// Session.set('timer', 0);
 	Session.set('challengeText', "");
 	Session.set('currentWordIndex', 0);
 	Session.set('nextWordIndex', 0);
@@ -334,30 +334,34 @@ Template.gameUI.created = function() {
 	opponentIndex = (game.players[0].id === Meteor.userId()) ? 1 : 0;
 	opponentName = game.players[opponentIndex].name;
 
-	// start timer if game status is "playing". If it isn't, then game might already be over.
-	if (game.status === 'playing') {
-		timerStart = Date.now();
-		timer = Meteor.setInterval(function() {
-			Session.set('timer', Date.now() - timerStart);
-		}, 100);
-	}
+	// start timer if game status changes to "playing".
+	Session.set('timer', 0);
+	Games.find({_id: gameId}, {fields: {status: 1}}).observeChanges({
+		changed: function(id, fields) {
+			if (fields.status === 'playing') {
+				timerStart = Date.now();
+				timer = setInterval(function() {
+					Session.set('timer', Date.now() - timerStart);
+				}, 100);
+			}
+		}
+	});
 
 	// watch this game's winner index for changes so we
 	// know when to call endGame()
-	Games.find({_id: gameId}, {fields: {winner: 1}})
-		.observeChanges({
-			changed: function(id, fields) {
+	Games.find({_id: gameId}, {fields: {winner: 1}}).observeChanges({
+		changed: function(id, fields) {
 
-				// check if this player lost
-				if (fields.winner === opponentIndex) {
-					playCharAnim('anim-lose', true);
+			// check if this player lost
+			if (fields.winner === opponentIndex) {
+				playCharAnim('anim-lose', true);
 
-					playSound("lose");
+				playSound("lose");
 
-				}
-				endGame();
 			}
-		});
+			endGame();
+		}
+	});
 
 	// watch the opponent's animation flag in the game data in order to know
 	// which animation to play for the opponent's character.
