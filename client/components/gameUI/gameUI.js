@@ -118,6 +118,9 @@ function endGame() {
 	finalOpponentScore = game.players[opponentIndex].score;
 	clearInterval(timer);
 
+	$(document).off('keypress');
+	$(document).off('keydown');
+
 	$('audio#fight-music')[0].pause();
 }
 
@@ -408,7 +411,8 @@ Template.gameUI.created = function() {
 //////// CLEANUP ////////
 
 Template.gameUI.destroyed = function() {
-	// stop handling typing events
+	// stop handling typing events. deregister these events just in case
+	// endgame() was never called.
 	$(document).off('keypress');
 	$(document).off('keydown');
 };
