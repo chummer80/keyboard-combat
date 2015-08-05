@@ -38,7 +38,6 @@ var timer, timerStart, animTimer;
 //////// FUNCTIONS ////////
 
 function startNewChallenge() {
-	// Session.set('timer', 0);
 	Session.set('challengeText', "");
 	Session.set('currentWordIndex', 0);
 	Session.set('nextWordIndex', 0);
@@ -118,6 +117,8 @@ function endGame() {
 	gameInProgress = false;
 	finalOpponentScore = game.players[opponentIndex].score;
 	clearInterval(timer);
+
+	$('audio#fight-music')[0].pause();
 }
 
 function updateScore(delta) {
@@ -130,12 +131,11 @@ function updateScore(delta) {
 	if (newScore >= goalScore) {
 		Meteor.call('setWinner', gameId, selfIndex);
 
+		endGame();
+
 		//make character go into win animation
 		playCharAnim('anim-win', true);
-
 		playSound("win");
-
-		endGame();
 	}
 }
 
@@ -167,19 +167,16 @@ function playSelfAttackAnim() {
 }
 
 function playSound(sound) {
-	var soundSetting = Meteor.users.findOne({_id: Meteor.userId()}, {fields: {sound: 1}}).sound;
-	if (soundSetting) {
-		switch(sound) {
-			case "fight":
-				playFightSound();
-				break;
-			case "win":
-				$('audio#win')[0].play();
-				break;
-			case "lose":
-				$('audio#lose')[0].play();
-				break;
-		}
+	switch(sound) {
+		case "fight":
+			playFightSound();
+			break;
+		case "win":
+			$('audio#win')[0].play();
+			break;
+		case "lose":
+			$('audio#lose')[0].play();
+			break;
 	}
 }
 
@@ -343,7 +340,19 @@ Template.gameUI.created = function() {
 				timer = setInterval(function() {
 					Session.set('timer', Date.now() - timerStart);
 				}, 100);
+				var musicElement = $('audio#fight-music')[0];
+				musicElement.play();
+				musicElement.volume = 0.4;
 			}
+		}
+	});
+
+	// mute/unmute all audio elements when sound setting is toggled
+	Meteor.users.find({_id: Meteor.userId()}, {fields: {sound: 1}}).observeChanges({
+		changed: function(id, fields) {
+			$('audio').each(function(index, element) {
+				element.muted = !fields.sound;
+			});
 		}
 	});
 
@@ -352,28 +361,26 @@ Template.gameUI.created = function() {
 	Games.find({_id: gameId}, {fields: {winner: 1}}).observeChanges({
 		changed: function(id, fields) {
 
+			endGame();
 			// check if this player lost
 			if (fields.winner === opponentIndex) {
 				playCharAnim('anim-lose', true);
 
 				playSound("lose");
-
 			}
-			endGame();
 		}
 	});
 
 	// watch the opponent's animation flag in the game data in order to know
 	// which animation to play for the opponent's character.
-	Games.find({_id: gameId}, {fields: {"players.anim": 1}})
-		.observeChanges({
-			changed: function(id, fields) {
-				if (lastOppAnim !== fields.players[opponentIndex].anim) {
-					lastOppAnim = fields.players[opponentIndex].anim;
-					playCharAnim(lastOppAnim, false);
-				}
+	Games.find({_id: gameId}, {fields: {"players.anim": 1}}).observeChanges({
+		changed: function(id, fields) {
+			if (lastOppAnim !== fields.players[opponentIndex].anim) {
+				lastOppAnim = fields.players[opponentIndex].anim;
+				playCharAnim(lastOppAnim, false);
 			}
-		});
+		}
+	});
 
 
 	gameInProgress = true;
@@ -551,6 +558,9 @@ Template.gameUI.helpers({
 	isCountingDown: function() {
 		var game = Games.findOne({_id: gameId}, {fields: {status: 1}});
 		return game.status === "countingDown";
+	},
+	isMuted: function() {
+		return !Meteor.users.findOne({_id: Meteor.userId()}, {fields: {sound: 1}}).sound;
 	}
 });
 
