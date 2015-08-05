@@ -1,6 +1,6 @@
 //////// CONSTANTS ////////
 
-var goalScore = 300;
+var goalScore = 150;
 Meteor.call('velocity/isMirror', function(err, isMirror) {
 	if (isMirror) {
 		goalScore = 40;
