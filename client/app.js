@@ -19,7 +19,7 @@ Meteor.startup(function() {
 
 Template.body.helpers({
 	isInGame: function() {
-		var gamesWithCurrentUser = Games.find({"players.id": Meteor.userId(), status: {$in: ["playing", "finished"]}});
+		var gamesWithCurrentUser = Games.find({"players.id": Meteor.userId(), status: {$in: ["countingDown", "playing", "finished"]}});
 		return !!gamesWithCurrentUser.count();
 	}
 });

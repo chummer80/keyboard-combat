@@ -1,52 +1,33 @@
 <template name="gameUI">
 	<div>
-		<div id="graphics-area">
-			<div id="name-row" class="row">
-				<div class="small-6 columns"><h4>{{currentUser.profile.name}}</h4></div>
-				<div class="small-6 columns text-right"><h4>{{opponentName}}</h4></div>
-			</div>
-			<div id="health-bars" class="row small-collapse">
-				<div id="left-bar" class="small-6 columns">
-					<div class="health-bar-base"></div>
-					<div class="health-bar-remaining" style="width:{{selfHealthPct}}"></div>
-				</div>
-				<div id="right-bar" class="small-6 columns">
-					<div class="health-bar-base"></div>
-					<div class="health-bar-remaining" style="width:{{opponentHealthPct}}"></div>
-				</div>
-			</div>
-			<div id="characters" class="row small-collapse">
-				<div class="small-6 columns">
-					<div id="left-char" class="character anim-default"></div>
-				</div>
-				<div class="small-6 columns">
-					<div id="right-char" class="character anim-default"></div>
-				</div>
-			</div>
-		</div>
-
-		{{#if isGameOver}}
-			{{#if isWinner}}
-				<h1 id="game-over-msg">YOU WIN! {{opponentName}} LOSES!</h1>
-			{{else}}
-				{{#if isLoser}}
-					<h1 id="game-over-msg">YOU LOSE! {{opponentName}} WINS!</h1>
-				{{/if}}
-			{{/if}}
+		{{#if isCountingDown}}
+			{{> countDown}}
 		{{else}}
-			<div id="challenge-area">
-				<p id="challenge-text"><span id="challenge-history">{{{challengeHistory}}}</span><span id="challenge-current">{{challengeCurrent}}</span><span id="challenge-future">{{challengeFuture}}</span>
-				</p>
-			</div>
-		{{/if}}
+			{{> graphicsArea}}
 
-		<h3>Time Elapsed: {{timer}}</h3>
-		{{#if isGameOver}}
-			<h3>Characters Typed: {{totalCharCount}}</h3>
-			<h3 id="accuracy">Accuracy: {{accuracy}}</h3>
-			<h3>Words with Errors: {{errorWordCount}}</h3>
-			<h3 id="wpm">Words Per Minute: {{wpm}}</h3>
-			<button id="leave-game-button">Back to Lobby</button>
+			{{#if isGameOver}}
+				{{#if isWinner}}
+					<h1 id="game-over-msg">YOU WIN!</h1>
+				{{else}}
+					{{#if isLoser}}
+						<h1 id="game-over-msg">YOU LOSE!</h1>
+					{{/if}}
+				{{/if}}
+			{{else}}
+				<div id="challenge-area">
+					<p id="challenge-text"><span id="challenge-history">{{{challengeHistory}}}</span><span id="challenge-current">{{challengeCurrent}}</span><span id="challenge-future">{{challengeFuture}}</span>
+					</p>
+				</div>
+			{{/if}}
+
+			<h3>Time Elapsed: {{timer}}</h3>
+			{{#if isGameOver}}
+				<h3>Characters Typed: {{totalCharCount}}</h3>
+				<h3 id="accuracy">Accuracy: {{accuracy}}</h3>
+				<h3>Words with Errors: {{errorWordCount}}</h3>
+				<h3 id="wpm">Words Per Minute: {{wpm}}</h3>
+				<button id="leave-game-button">Back to Lobby</button>
+			{{/if}}
 		{{/if}}
 
 	</div>

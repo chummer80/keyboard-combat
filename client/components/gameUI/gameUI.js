@@ -8,7 +8,7 @@ Meteor.call('velocity/isMirror', function(err, isMirror) {
 });
 
 var correctPoints = 1;
-var errorPoints = 3;
+var errorPoints = 2;
 
 var miscAnims = [
 	'anim-default',
@@ -118,10 +118,6 @@ function endGame() {
 	gameInProgress = false;
 	finalOpponentScore = game.players[opponentIndex].score;
 	clearInterval(timer);
-
-	// stop handling typing events
-	$(document).off('keypress');
-	$(document).off('keydown');
 }
 
 function updateScore(delta) {
@@ -338,11 +334,13 @@ Template.gameUI.created = function() {
 	opponentIndex = (game.players[0].id === Meteor.userId()) ? 1 : 0;
 	opponentName = game.players[opponentIndex].name;
 
-	// start timer
-	timerStart = Date.now();
-	timer = Meteor.setInterval(function() {
-		Session.set('timer', Date.now() - timerStart);
-	}, 100);
+	// start timer if game status is "playing". If it isn't, then game might already be over.
+	if (game.status === 'playing') {
+		timerStart = Date.now();
+		timer = Meteor.setInterval(function() {
+			Session.set('timer', Date.now() - timerStart);
+		}, 100);
+	}
 
 	// watch this game's winner index for changes so we
 	// know when to call endGame()
@@ -395,6 +393,14 @@ Template.gameUI.created = function() {
 	playCharAnim('anim-default', false);
 }
 
+
+//////// CLEANUP ////////
+
+Template.gameUI.destroyed = function() {
+	// stop handling typing events
+	$(document).off('keypress');
+	$(document).off('keydown');
+};
 
 //////// VIEW HELPERS ////////
 
@@ -515,7 +521,7 @@ Template.gameUI.helpers({
 		var totalChars = Session.get('correctCharCount') + Session.get('errorCharCount');
 		var minutes = Session.get('timer') / 1000 / 60;
 		var netWpm = (totalChars / 5 - Session.get('errorWordCount')) / minutes;
-		return Math.round(netWpm);
+		return Math.round(netWpm) || 0;
 	},
 	isWinner: function() {
 		var game = Games.findOne({_id: gameId}, {fields: {winner: 1}});
@@ -529,9 +535,6 @@ Template.gameUI.helpers({
 		var game = Games.findOne({_id: gameId}, {fields: {winner: 1}});
 	 	return game.winner !== null;
 	},
-	opponentName: function() {
-		return opponentName;
-	},
 	opponentScore: function() {
 		if (gameInProgress) {
 			var game = Games.findOne({_id: gameId}, {fields: {"players.score": 1}});
@@ -541,7 +544,26 @@ Template.gameUI.helpers({
 			return finalOpponentScore;
 		}
 	},
-	selfHealthPct: function() {
+	isCountingDown: function() {
+		var game = Games.findOne({_id: gameId}, {fields: {status: 1}});
+		return game.status === "countingDown";
+	}
+});
+
+
+//////// GLOBAL HELPERS ////////
+
+
+Template.registerHelper(
+	'opponentName', 
+	function() {
+		return opponentName;
+	}
+);
+
+Template.registerHelper(
+	'selfHealthPct', 
+	function() {
 		var opponentScore;
 		if (gameInProgress) {
 			var game = Games.findOne({_id: gameId}, {fields: {"players.score": 1}});
@@ -551,12 +573,15 @@ Template.gameUI.helpers({
 			opponentScore = finalOpponentScore;
 		}
 		return ((goalScore - opponentScore) / goalScore * 100) + "%";
-	},
-	opponentHealthPct: function() {
+	}
+);
+
+Template.registerHelper(
+	'opponentHealthPct', 
+	function() {
 		return ((goalScore - Session.get('points')) / goalScore * 100) + "%";
 	}
-});
-
+);
 
 //////// EVENT LISTENERS ////////
 
