@@ -1,4 +1,4 @@
-var timerStates = ["3", "2", "1", "GO!"];
+var timerStates = ["3", "2", "1", "FIGHT!"];
 var stateIndex, gameId;
 var $timerUI, countdownTimer;
 

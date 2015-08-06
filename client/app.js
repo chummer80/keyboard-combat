@@ -8,7 +8,12 @@ Accounts.ui.config({
 });
 
 Meteor.startup(function() {
-	
+	$(document.body).keydown(function(event) {
+		// stop backspace from leaving the page
+		if (event.keyCode === 8) {
+			event.preventDefault();
+		}
+	});
 });
 
 
@@ -30,10 +35,4 @@ Template.body.helpers({
 //////// EVENT LISTENERS ////////
 
 Template.body.events({
-	'click #soundToggle': function(event) {
-		event.preventDefault();
-
-		var currentSoundSetting = Meteor.users.findOne({_id: Meteor.userId()}, {fields: {sound: 1}}).sound;
-		Meteor.call('setSound', Meteor.userId(), !currentSoundSetting);
-	}
 })
